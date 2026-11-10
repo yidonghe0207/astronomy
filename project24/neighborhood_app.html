@@ -21,6 +21,7 @@
     color-scheme: dark;
   }
   html, body { background: var(--void); color: var(--ink); }
+  [hidden] { display: none !important; }  /* keeps the star card hidden until you click a star */
   body { font-family: var(--font-verse); margin: 0; overflow-x: hidden; }
   body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--void); }
 
@@ -154,6 +155,7 @@
 <div class="scrim" aria-hidden="true"></div>
 <div class="label3d" id="lab-sun">the Sun</div>
 <div class="label3d" id="lab-hyades" style="opacity:0">the Hyades</div>
+<div class="label3d" id="lab-gc" style="color: var(--mute)">toward the Galactic Centre</div>
 
 <nav class="index" aria-label="Chapters">
   <a href="#c0" data-c="c0"><span>Arrival</span>00</a>
@@ -372,6 +374,14 @@ const starMaterial = new THREE.ShaderMaterial({
     }`,
 });
 scene.add(new THREE.Points(geom, starMaterial));
+
+// Landmarks so you can tell which way you are facing: a faint ring where the Galaxy's
+// disc cuts the 100 pc sphere, and a short line pointing toward the Galactic Centre.
+const ringPts = [];
+for (let k = 0; k <= 180; k++) { const t = k / 180 * 2 * Math.PI; ringPts.push(new THREE.Vector3(100 * Math.cos(t), 100 * Math.sin(t), 0)); }
+const guide = new THREE.LineBasicMaterial({ color: 0x8a8c98, transparent: true, opacity: 0.28 });
+scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ringPts), guide));
+scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(100, 0, 0), new THREE.Vector3(125, 0, 0)]), guide));
 
 // The Sun: one warm point at the origin
 const sunGeom = new THREE.BufferGeometry();
@@ -608,7 +618,9 @@ function frame(now) {
   if (!reduceMotion && !dragging && !user.touched) goalYaw += dt * 0.025 * goal.drift;  // the sky turns slowly until you touch it
   cam.tx += (goal.target[0] + user.pan[0] - cam.tx) * ease; cam.ty += (goal.target[1] + user.pan[1] - cam.ty) * ease;
   cam.tz += (goal.target[2] + user.pan[2] - cam.tz) * ease;
-  cam.r += (goal.r * (innerWidth > 820 ? 1 : 1.6) * user.zoom - cam.r) * ease;  // phones: stand farther back cam.yaw += (goalYaw - cam.yaw) * ease; cam.pitch += (goalPitch - cam.pitch) * ease;
+  cam.r += (goal.r * (innerWidth > 820 ? 1 : 1.6) * user.zoom - cam.r) * ease;  // phones: stand farther back
+  cam.yaw += (goalYaw - cam.yaw) * ease;
+  cam.pitch += (goalPitch - cam.pitch) * ease;
   uniforms.uMix.value = Math.min(1, uniforms.uMix.value + dt * (reduceMotion ? 10 : 0.9));
   const choosing = active === "atlas" && hasChoice;
   uniforms.uChosen.value += ((choosing ? 1 : 0) - uniforms.uChosen.value) * Math.min(1, dt * 4);
@@ -622,6 +634,7 @@ function frame(now) {
 
   placeLabel(document.getElementById("lab-sun"), 0, 0, 0);
   placeLabel(document.getElementById("lab-hyades"), -43.9, 0, -18.1);
+  placeLabel(document.getElementById("lab-gc"), 125, 0, 0);
   placeCard();
   const d = camera.position.length();  // distance of the camera from the Sun
   readout.textContent = `camera ${d.toFixed(0)} pc · ${(d * 3.2616).toFixed(0)} light-years from the Sun`;
