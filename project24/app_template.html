@@ -1,0 +1,243 @@
+<title>Our Neighborhood in 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+  /* Layout: a star-chart console. Header, a row of "try this" chips, then the two linked
+     views side by side (stacked on phones), with a live readout under them.
+     Deliberately dark-only: stars read best on a black sky. */
+  :root {
+    --sky: #07090f;         /* page background */
+    --panel: #0e1220;       /* chart panels */
+    --line: #232a40;        /* borders, grid */
+    --ink: #e6e9f2;         /* main text */
+    --dim: #8d96b3;         /* secondary text */
+    --pick: #ffcf5a;        /* selection highlight (warm, like a G star) */
+    --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+    --font-body: "Inter", system-ui, -apple-system, sans-serif;
+    --font-data: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    color-scheme: dark;
+  }
+  html, body { background: var(--sky); color: var(--ink); }
+  body {
+    font-family: var(--font-body); line-height: 1.5;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 28px;
+  }
+  .wrap { max-width: 1400px; margin: 0 auto; display: grid; gap: 16px; }
+  header { display: grid; gap: 6px; }
+  h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+       margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+  .lede { margin: 0; color: var(--dim); max-width: 70ch; }
+  .lede b { color: var(--ink); font-weight: 500; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .chips .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--dim); margin-right: 4px; }
+  button.chip {
+    font: inherit; font-size: 0.9rem; color: var(--ink); background: var(--panel);
+    border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer;
+  }
+  button.chip:hover { border-color: var(--dim); }
+  button.chip[aria-pressed="true"] { border-color: var(--pick); color: var(--pick); }
+  button.chip:focus-visible { outline: 2px solid var(--pick); outline-offset: 2px; }
+  .views { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 16px; }
+  .view { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0;
+          display: grid; grid-template-rows: auto 1fr; }
+  .view h2 { font-family: var(--font-display); font-weight: 500; font-size: 1rem; margin: 0;
+             padding: 10px 14px 0; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .view h2 span { font-family: var(--font-body); font-size: 0.8rem; color: var(--dim); font-weight: 400; }
+  .chart { height: min(68vh, 640px); min-height: 380px; }
+  .readout { display: flex; flex-wrap: wrap; gap: 8px 28px; font-size: 0.9rem; color: var(--dim);
+             border-top: 1px solid var(--line); padding-top: 12px; }
+  .readout b { font-family: var(--font-data); font-weight: 400; color: var(--pick); font-variant-numeric: tabular-nums; }
+  #note { color: var(--ink); max-width: 80ch; margin: 0; min-height: 1.5em; }
+  footer { font-size: 0.8rem; color: var(--dim); }
+  footer a { color: var(--dim); }
+  @media (max-width: 860px) {
+    .views { grid-template-columns: minmax(0, 1fr); }
+    .chart { height: 460px; min-height: 0; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Our neighborhood in 3D</h1>
+    <p class="lede">Every star within <b>100 parsecs</b> (326 light-years) of the Sun measured by Gaia: <b id="total">…</b> stars.
+      Drag a box or lasso around any part of the <b>HR diagram</b> on the left, and the <b>3D map</b> on the right shows where those stars are.
+      Drag the map to spin it.</p>
+  </header>
+
+  <div class="chips" role="group" aria-label="Quick selections">
+    <span class="label">Try</span>
+    <button class="chip" id="p-wd" data-preset="wd">White dwarfs</button>
+    <button class="chip" id="p-giants" data-preset="giants">Giants</button>
+    <button class="chip" id="p-sun" data-preset="sun">Sun-like stars</button>
+    <button class="chip" id="p-red" data-preset="red">Red dwarfs</button>
+    <button class="chip" id="p-hyades" data-preset="hyades">Find a star cluster</button>
+  </div>
+  <p id="note" aria-live="polite"></p>
+
+  <div class="views">
+    <section class="view">
+      <h2>HR diagram <span>colour vs. true brightness</span></h2>
+      <div id="hr" class="chart"></div>
+    </section>
+    <section class="view">
+      <h2>3D map <span>Sun at the centre · distances in parsecs</span></h2>
+      <div id="map" class="chart"></div>
+    </section>
+  </div>
+
+  <div class="readout" aria-live="polite">
+    <span>Selected <b id="r-n">0</b> stars</span>
+    <span>Shown in 3D <b id="r-shown">0</b></span>
+    <span>Median distance <b id="r-med">–</b></span>
+    <span>Nearest <b id="r-near">–</b></span>
+  </div>
+
+  <footer>
+    Data: ESA Gaia Data Release 3 (Gaia Collaboration, 2023), from the <a href="https://gea.esac.esa.int/archive/">Gaia Archive</a>.
+    Stars with parallax &gt; 10 mas that pass Gaia's standard quality checks (RUWE &lt; 1.4 and the BP/RP colour-excess test).
+    Gaia cannot measure the very brightest stars (such as Sirius), so a few famous neighbours are missing.
+    Built for CS85 with Plotly.
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script>
+// ---------------------------------------------------------------------------
+// The star data. make_app.py replaces the placeholder below with real Gaia data.
+// To keep the file small, numbers are stored as whole numbers:
+//   c = colour BP-RP x 100,  g = absolute G magnitude x 100,  x/y/z = position in parsecs x 10
+// The stars are in random order, so "the first N selected stars" is a fair random sample.
+// ---------------------------------------------------------------------------
+const RAW = __STAR_DATA__;
+const N = RAW.c.length;
+const colour = RAW.c.map(v => v / 100);
+const absG   = RAW.g.map(v => v / 100);
+const X = RAW.x.map(v => v / 10), Y = RAW.y.map(v => v / 10), Z = RAW.z.map(v => v / 10);
+const dist = X.map((x, i) => Math.hypot(x, Y[i], Z[i]));
+
+const MAX_3D = 25000;  // drawing more than this many points in 3D makes the browser sluggish
+const css = getComputedStyle(document.documentElement);
+const ink = css.getPropertyValue("--ink").trim(), dim = css.getPropertyValue("--dim").trim();
+const line = css.getPropertyValue("--line").trim(), pick = css.getPropertyValue("--pick").trim();
+document.getElementById("total").textContent = N.toLocaleString();
+
+// --- Quick selections: each is a simple rule on the HR diagram --------------
+const isWhiteDwarf = i => absG[i] > 10 + 2.5 * colour[i];
+const PRESETS = {
+  wd:     { test: isWhiteDwarf,
+            note: "White dwarfs are the cooling cores of dead stars. They are old, so over billions of years they have spread evenly through the whole bubble." },
+  giants: { test: i => absG[i] < 3.5 && colour[i] > 1.0,
+            note: "Giants are rare and bright: stars that have used up the hydrogen in their cores and swollen up. Only a few hundred live this close." },
+  sun:    { test: i => colour[i] > 0.72 && colour[i] < 0.92 && absG[i] > 4 && absG[i] < 5.5,
+            note: "Stars with the Sun's colour and brightness (the Sun has BP-RP ≈ 0.82, absolute G ≈ 4.7). Sun-like stars are all around us." },
+  red:    { test: i => colour[i] > 2.5 && !isWhiteDwarf(i),
+            note: "Red dwarfs are small, cool and faint, and they are the most common stars in the Galaxy. They dominate our neighborhood." },
+  hyades: { test: i => absG[i] < 4 && !isWhiteDwarf(i),
+            note: "This picks only the brightest stars, and the map zooms into a 24-parsec-thick slice of space toward Taurus. The tight clump is the Hyades, the nearest star cluster, about 47 parsecs away. Its stars were born together about 650 million years ago. Click a different button to see the whole bubble again.",
+            only3d: i => Math.abs(Y[i]) < 12,  // just a slice through the cluster, so stars in front and behind don't hide it
+            camera: { center: { x: -0.21, y: 0, z: -0.09 }, eye: { x: -0.16, y: -0.75, z: -0.01 } },
+            label: { x: -43.9, y: 0, z: -18.1, text: "Hyades" } },
+};
+
+// --- Left: the HR diagram (every star) --------------------------------------
+const axisStyle = { color: dim, gridcolor: line, zerolinecolor: line, tickfont: { family: "JetBrains Mono, monospace", size: 11 } };
+Plotly.newPlot("hr", [{
+  type: "scattergl", mode: "markers", x: colour, y: absG,
+  marker: { size: 2.5, color: "#7c87a8", opacity: 0.55 },
+  selected:   { marker: { color: pick, opacity: 0.9 } },
+  unselected: { marker: { opacity: 0.12 } },
+  hovertemplate: "colour %{x:.2f}<br>abs. G %{y:.2f}<extra></extra>",
+}], {
+  paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
+  font: { family: "Inter, sans-serif", color: ink }, margin: { l: 56, r: 14, t: 10, b: 48 },
+  dragmode: "lasso", showlegend: false,
+  xaxis: { ...axisStyle, title: { text: "Colour BP − RP  (blue → red)", font: { size: 12, color: dim } } },
+  yaxis: { ...axisStyle, autorange: "reversed", title: { text: "Absolute G magnitude  (bright ↑)", font: { size: 12, color: dim } } },
+  annotations: [
+    { x: 1.75, y: 0.2, text: "giants", showarrow: false, font: { color: dim, size: 12 } },
+    { x: 3.3, y: 8.6, text: "main sequence", showarrow: false, font: { color: dim, size: 12 }, textangle: 38 },
+    { x: 0.1, y: 16.6, text: "white dwarfs", showarrow: false, font: { color: dim, size: 12 } },
+  ],
+}, { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["toImage", "autoScale2d"] });
+
+// --- Right: the 3D map --------------------------------------------------------
+// Trace 0: a faint random sample of all stars, so you can see the shape of the bubble.
+// Trace 1: the selected stars, coloured by their real colour (blue-white to red).
+// Trace 2: the Sun.
+const background = [];
+for (let i = 0; i < 6000 && i < N; i++) background.push(i);
+const starColours = [[0, "#9db4ff"], [0.15, "#cad7ff"], [0.3, "#fff4ea"], [0.45, "#ffd2a1"], [0.7, "#ff9c5a"], [1, "#ff5a3c"]];
+const sceneAxis = t => ({ title: { text: t, font: { size: 11, color: dim } }, range: [-105, 105], color: dim,
+  gridcolor: line, zerolinecolor: line, backgroundcolor: "rgba(0,0,0,0)", showbackground: false,
+  tickfont: { family: "JetBrains Mono, monospace", size: 10 } });
+const DEFAULT_CAMERA = { eye: { x: 1.35, y: 1.35, z: 0.8 } };
+Plotly.newPlot("map", [
+  { type: "scatter3d", mode: "markers", x: background.map(i => X[i]), y: background.map(i => Y[i]), z: background.map(i => Z[i]),
+    marker: { size: 1.1, color: "#4a5272", opacity: 0.25 }, hoverinfo: "skip", name: "all stars (sample)" },
+  { type: "scatter3d", mode: "markers", x: [], y: [], z: [], customdata: [],
+    marker: { size: 2, color: [], colorscale: starColours, cmin: -0.4, cmax: 4.2, opacity: 0.9 },
+    hovertemplate: "%{customdata[0]:.1f} pc  (%{customdata[1]:.0f} light-years)<br>colour %{customdata[2]:.2f} · abs. G %{customdata[3]:.2f}<extra></extra>",
+    name: "selected" },
+  { type: "scatter3d", mode: "markers+text", x: [0], y: [0], z: [0], text: ["Sun"], textposition: "top center",
+    textfont: { color: pick, size: 12 }, marker: { size: 6, color: pick, symbol: "diamond" }, hoverinfo: "text", name: "Sun" },
+], {
+  paper_bgcolor: "rgba(0,0,0,0)", font: { family: "Inter, sans-serif", color: ink },
+  margin: { l: 0, r: 0, t: 0, b: 0 }, showlegend: false,
+  scene: { aspectmode: "cube", camera: DEFAULT_CAMERA,
+           xaxis: sceneAxis("x → Galactic Centre"), yaxis: sceneAxis("y → direction of orbit"), zaxis: sceneAxis("z → Galactic north") },
+}, { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["toImage"] });
+
+// --- Linking: whenever the selection changes, redraw the 3D map ---------------
+function show(indices, camera, label, only3d) {
+  const inView = only3d ? indices.filter(only3d) : indices;
+  const shown = inView.slice(0, MAX_3D);  // stars are in random order, so this is a random sample
+  Plotly.restyle("map", {
+    x: [shown.map(i => X[i])], y: [shown.map(i => Y[i])], z: [shown.map(i => Z[i])],
+    "marker.color": [shown.map(i => colour[i])],
+    "marker.size": shown.length > 8000 ? 1.6 : shown.length > 1500 ? 2.2 : 3.2,
+    customdata: [shown.map(i => [dist[i], dist[i] * 3.2616, colour[i], absG[i]])],
+  }, [1]);
+  const annotations = label ? [{ ...label, showarrow: true, arrowcolor: pick, ax: 70, ay: -70,
+                                  font: { color: pick, size: 13 } }] : [];
+  Plotly.relayout("map", camera ? { "scene.camera": camera, "scene.annotations": annotations }
+                                : { "scene.annotations": annotations });
+
+  const d = indices.map(i => dist[i]).sort((a, b) => a - b);
+  document.getElementById("r-n").textContent = indices.length.toLocaleString();
+  document.getElementById("r-shown").textContent =
+    shown.length.toLocaleString() + (only3d ? " (slice)" : shown.length < indices.length ? " (random sample)" : "");
+  document.getElementById("r-med").textContent = d.length ? `${d[d.length >> 1].toFixed(1)} pc` : "–";
+  document.getElementById("r-near").textContent = d.length ? `${d[0].toFixed(2)} pc · ${(d[0] * 3.2616).toFixed(1)} ly` : "–";
+}
+
+function setPressed(key) {
+  document.querySelectorAll("button.chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.preset === key)));
+}
+
+function applyPreset(key) {
+  const p = PRESETS[key];
+  const indices = [];
+  for (let i = 0; i < N; i++) if (p.test(i)) indices.push(i);
+  Plotly.restyle("hr", { selectedpoints: [indices] }, [0]);
+  setPressed(key);
+  document.getElementById("note").textContent = p.note;
+  show(indices, p.camera || DEFAULT_CAMERA, p.label, p.only3d);
+}
+
+document.querySelectorAll("button.chip").forEach(b => b.addEventListener("click", () => applyPreset(b.dataset.preset)));
+
+const hr = document.getElementById("hr");
+hr.on("plotly_selected", ev => {
+  if (!ev) return;  // a click without dragging
+  const indices = ev.points.map(p => p.pointIndex).sort((a, b) => a - b);
+  setPressed(null);
+  document.getElementById("note").textContent = `Your selection: ${indices.length.toLocaleString()} stars. Spin the map to see where they sit.`;
+  show(indices);
+});
+hr.on("plotly_deselect", () => applyPreset("wd"));
+
+applyPreset("wd");  // open on the white dwarfs: the question this project asks
+</script>
