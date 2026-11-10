@@ -1,243 +1,528 @@
 <title>Our Neighborhood in 3D</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&family=Syne:wght@400;600&family=IBM+Plex+Mono:wght@300;400&display=swap">
 <style>
-  /* Layout: a star-chart console. Header, a row of "try this" chips, then the two linked
-     views side by side (stacked on phones), with a live readout under them.
-     Deliberately dark-only: stars read best on a black sky. */
+  /* Layout: a gallery wall at night. One fixed field of real stars fills the screen;
+     a narrow column of text scrolls over it on a strict left margin, chapter by chapter,
+     and the camera travels as you read. The last chapter hands the camera to the visitor.
+     Deliberately dark-only: this is a page about the night. */
   :root {
-    --sky: #07090f;         /* page background */
-    --panel: #0e1220;       /* chart panels */
-    --line: #232a40;        /* borders, grid */
-    --ink: #e6e9f2;         /* main text */
-    --dim: #8d96b3;         /* secondary text */
-    --pick: #ffcf5a;        /* selection highlight (warm, like a G star) */
-    --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
-    --font-body: "Inter", system-ui, -apple-system, sans-serif;
-    --font-data: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    --void: #030407;        /* the sky */
+    --ink: #ece8e1;         /* starlight white, slightly warm */
+    --mute: #8a8c98;        /* secondary text */
+    --hair: rgba(236, 232, 225, 0.18);  /* hairlines */
+    --sol: #ffcf7a;         /* the Sun, and anything you choose */
+    --ember: #a9c6ff;       /* white-dwarf blue */
+    --font-display: "Syne", "Helvetica Neue", Arial, sans-serif;
+    --font-verse: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+    --font-data: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    --col: min(30rem, 100%);
     color-scheme: dark;
   }
-  html, body { background: var(--sky); color: var(--ink); }
-  body {
-    font-family: var(--font-body); line-height: 1.5;
-    padding-left: max(16px, env(safe-area-inset-left, 0px));
+  html, body { background: var(--void); color: var(--ink); }
+  body { font-family: var(--font-verse); margin: 0; overflow-x: hidden; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--void); }
+
+  #sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; pointer-events: none; }
+  .label3d { position: fixed; left: 0; top: 0; z-index: 1; pointer-events: none; font-family: var(--font-data);
+             font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sol);
+             white-space: nowrap; transition: opacity 0.8s; }
+  .label3d::before { content: ""; display: inline-block; width: 18px; height: 1px; background: currentColor; vertical-align: middle; margin-right: 8px; }
+
+  main { position: relative; z-index: 2; }
+  .scrim { position: fixed; inset: 0; z-index: 1; pointer-events: none;
+           background: linear-gradient(90deg, rgba(3, 4, 7, 0.88) 0%, rgba(3, 4, 7, 0.6) 28%, rgba(3, 4, 7, 0) 48%); }
+  body.atlas nav.index { opacity: 0; pointer-events: none; }
+  nav.index { transition: opacity 0.6s; }
+  .chapter {
+    min-height: 100vh; display: grid; align-content: center;
+    padding-left: max(16px, env(safe-area-inset-left, 0px), 8vw);
     padding-right: max(16px, env(safe-area-inset-right, 0px));
-    padding-block: 20px 28px;
+    padding-block: 18vh;
   }
-  .wrap { max-width: 1400px; margin: 0 auto; display: grid; gap: 16px; }
-  header { display: grid; gap: 6px; }
-  h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.6rem, 3.5vw, 2.4rem);
-       margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
-  .lede { margin: 0; color: var(--dim); max-width: 70ch; }
-  .lede b { color: var(--ink); font-weight: 500; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  .chips .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--dim); margin-right: 4px; }
-  button.chip {
-    font: inherit; font-size: 0.9rem; color: var(--ink); background: var(--panel);
-    border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer;
+  .text { width: var(--col); display: grid; gap: 1.1rem; text-shadow: 0 0 24px var(--void), 0 0 4px var(--void); }
+  .eyebrow { font-family: var(--font-data); font-weight: 300; font-size: 0.72rem; letter-spacing: 0.22em;
+             text-transform: uppercase; color: var(--mute); display: flex; gap: 14px; align-items: center; margin: 0; }
+  .eyebrow .n { color: var(--ink); }
+  .eyebrow::after { content: ""; flex: 0 0 56px; height: 1px; background: var(--hair); }
+  h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; letter-spacing: -0.02em; text-wrap: balance; line-height: 0.95; }
+  h1 { font-size: clamp(3.2rem, 9vw, 7.5rem); }
+  h1 em, h2 em { font-family: var(--font-verse); font-style: italic; font-weight: 300; letter-spacing: 0; display: block; font-size: 0.5em; line-height: 1.2; margin-top: 0.3em; color: var(--mute); }
+  h2 { font-size: clamp(2.2rem, 5vw, 3.6rem); }
+  .big { font-family: var(--font-display); font-size: clamp(3rem, 8vw, 6rem); line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  p.verse { font-size: clamp(1.25rem, 2vw, 1.5rem); line-height: 1.45; margin: 0; font-weight: 300; max-width: 30ch; }
+  p.prose { font-size: 1.2rem; line-height: 1.55; margin: 0; font-weight: 300; max-width: 34ch; }
+  .fact { font-family: var(--font-data); font-weight: 300; font-size: 0.75rem; letter-spacing: 0.04em; color: var(--mute);
+          border-top: 1px solid var(--hair); padding-top: 10px; margin: 0.4rem 0 0; }
+  .ember { color: var(--ember); } .solc { color: var(--sol); }
+  .cue { font-family: var(--font-data); font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mute); margin-top: 2rem; }
+  .cue span { display: inline-block; animation: drift 2.4s ease-in-out infinite; }
+  @keyframes drift { 50% { transform: translateY(6px); } }
+
+  /* the chapter index, right edge */
+  nav.index { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); top: 50%; transform: translateY(-50%); z-index: 3;
+              display: grid; gap: 10px; }
+  nav.index a { font-family: var(--font-data); font-size: 0.66rem; letter-spacing: 0.16em; color: var(--mute); text-decoration: none;
+                display: flex; align-items: center; gap: 8px; justify-content: flex-end; opacity: 0.55; transition: opacity 0.4s, color 0.4s; }
+  nav.index a::after { content: ""; width: 14px; height: 1px; background: currentColor; transition: width 0.4s; }
+  nav.index a.on { opacity: 1; color: var(--ink); } nav.index a.on::after { width: 32px; }
+  nav.index a span { opacity: 0; transition: opacity 0.4s; } nav.index a.on span, nav.index a:hover span { opacity: 1; }
+  nav.index a:focus-visible { outline: 1px solid var(--sol); outline-offset: 4px; }
+
+  /* the readout, bottom left */
+  .readout { position: fixed; left: max(16px, env(safe-area-inset-left, 0px), 8vw); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 3;
+             font-family: var(--font-data); font-weight: 300; font-size: 0.68rem; letter-spacing: 0.1em; color: var(--mute);
+             text-transform: uppercase; font-variant-numeric: tabular-nums; pointer-events: none; }
+
+  /* the atlas: final chapter, where the visitor takes over */
+  #atlas { min-height: 100vh; cursor: grab; touch-action: pan-y; align-content: start; padding-top: 14vh; }
+  #atlas:active { cursor: grabbing; }
+  #atlas .text { pointer-events: none; }
+  .panel { position: fixed; z-index: 4; right: max(64px, env(safe-area-inset-right, 0px)); bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+           width: 340px; display: grid; gap: 10px; opacity: 0; transform: translateY(16px); pointer-events: none;
+           transition: opacity 0.8s, transform 0.8s; }
+  body.atlas .panel { opacity: 1; transform: none; pointer-events: auto; }
+  .panel .frame { position: relative; border: 1px solid var(--hair); background: rgba(3, 4, 7, 0.72); backdrop-filter: blur(6px); }
+  #hr { display: block; width: 100%; height: 380px; touch-action: none; cursor: crosshair; }
+  .axis { position: absolute; font-family: var(--font-data); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mute); pointer-events: none; }
+  .axis.l { left: 8px; top: 8px; } .axis.b { left: 8px; bottom: 8px; } .axis.r { right: 8px; bottom: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips button { font-family: var(--font-data); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase;
+                  color: var(--ink); background: transparent; border: 1px solid var(--hair); padding: 6px 10px; cursor: pointer; }
+  .chips button:hover { border-color: var(--ink); }
+  .chips button[aria-pressed="true"] { border-color: var(--sol); color: var(--sol); }
+  .chips button:focus-visible { outline: 1px solid var(--sol); outline-offset: 2px; }
+  #sel { font-family: var(--font-data); font-weight: 300; font-size: 0.7rem; letter-spacing: 0.06em; color: var(--mute); min-height: 2.6em; margin: 0; font-variant-numeric: tabular-nums; }
+  #sel b { color: var(--sol); font-weight: 400; }
+  .credits { font-family: var(--font-data); font-weight: 300; font-size: 0.66rem; line-height: 1.7; color: var(--mute); max-width: 52ch; margin-top: 2rem; pointer-events: auto;
+             text-shadow: 0 0 12px var(--void), 0 0 3px var(--void), 0 0 2px var(--void); }
+  .credits a { color: var(--mute); }
+
+  @media (max-width: 820px) {
+    .chapter { padding-block: 22vh; align-content: end; }
+    nav.index { display: none; }
+    .panel { position: relative; left: auto; right: auto; bottom: auto; width: 100%; margin-top: 1.5rem; }
+    #hr { height: 230px; }
+    #atlas { padding-top: 10vh; }
+    .readout { display: none; }
+    body.atlas .scrim { background: linear-gradient(180deg, rgba(3, 4, 7, 0.92) 0%, rgba(3, 4, 7, 0.75) 45%, rgba(3, 4, 7, 0) 70%); }
+    .scrim { background: linear-gradient(0deg, rgba(3, 4, 7, 0.9) 0%, rgba(3, 4, 7, 0.55) 40%, rgba(3, 4, 7, 0) 62%); }
   }
-  button.chip:hover { border-color: var(--dim); }
-  button.chip[aria-pressed="true"] { border-color: var(--pick); color: var(--pick); }
-  button.chip:focus-visible { outline: 2px solid var(--pick); outline-offset: 2px; }
-  .views { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 16px; }
-  .view { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0;
-          display: grid; grid-template-rows: auto 1fr; }
-  .view h2 { font-family: var(--font-display); font-weight: 500; font-size: 1rem; margin: 0;
-             padding: 10px 14px 0; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-  .view h2 span { font-family: var(--font-body); font-size: 0.8rem; color: var(--dim); font-weight: 400; }
-  .chart { height: min(68vh, 640px); min-height: 380px; }
-  .readout { display: flex; flex-wrap: wrap; gap: 8px 28px; font-size: 0.9rem; color: var(--dim);
-             border-top: 1px solid var(--line); padding-top: 12px; }
-  .readout b { font-family: var(--font-data); font-weight: 400; color: var(--pick); font-variant-numeric: tabular-nums; }
-  #note { color: var(--ink); max-width: 80ch; margin: 0; min-height: 1.5em; }
-  footer { font-size: 0.8rem; color: var(--dim); }
-  footer a { color: var(--dim); }
-  @media (max-width: 860px) {
-    .views { grid-template-columns: minmax(0, 1fr); }
-    .chart { height: 460px; min-height: 0; }
-  }
+  @media (prefers-reduced-motion: reduce) { .cue span { animation: none; } }
 </style>
 
-<div class="wrap">
-  <header>
-    <h1>Our neighborhood in 3D</h1>
-    <p class="lede">Every star within <b>100 parsecs</b> (326 light-years) of the Sun measured by Gaia: <b id="total">…</b> stars.
-      Drag a box or lasso around any part of the <b>HR diagram</b> on the left, and the <b>3D map</b> on the right shows where those stars are.
-      Drag the map to spin it.</p>
-  </header>
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="scrim" aria-hidden="true"></div>
+<div class="label3d" id="lab-sun">the Sun</div>
+<div class="label3d" id="lab-hyades" style="opacity:0">the Hyades</div>
 
-  <div class="chips" role="group" aria-label="Quick selections">
-    <span class="label">Try</span>
-    <button class="chip" id="p-wd" data-preset="wd">White dwarfs</button>
-    <button class="chip" id="p-giants" data-preset="giants">Giants</button>
-    <button class="chip" id="p-sun" data-preset="sun">Sun-like stars</button>
-    <button class="chip" id="p-red" data-preset="red">Red dwarfs</button>
-    <button class="chip" id="p-hyades" data-preset="hyades">Find a star cluster</button>
-  </div>
-  <p id="note" aria-live="polite"></p>
+<nav class="index" aria-label="Chapters">
+  <a href="#c0" data-c="c0"><span>Arrival</span>00</a>
+  <a href="#c1" data-c="c1"><span>Here</span>01</a>
+  <a href="#c2" data-c="c2"><span>Sphere</span>02</a>
+  <a href="#c3" data-c="c3"><span>Embers</span>03</a>
+  <a href="#c4" data-c="c4"><span>Giants</span>04</a>
+  <a href="#c5" data-c="c5"><span>Family</span>05</a>
+  <a href="#atlas" data-c="atlas"><span>Atlas</span>06</a>
+</nav>
+<div class="readout" id="readout">camera 0 pc from the Sun</div>
 
-  <div class="views">
-    <section class="view">
-      <h2>HR diagram <span>colour vs. true brightness</span></h2>
-      <div id="hr" class="chart"></div>
-    </section>
-    <section class="view">
-      <h2>3D map <span>Sun at the centre · distances in parsecs</span></h2>
-      <div id="map" class="chart"></div>
-    </section>
-  </div>
+<main>
+  <section class="chapter" id="c0">
+    <div class="text">
+      <p class="eyebrow">Gaia DR3 · 100 parsecs</p>
+      <h1>Our Neighborhood <em>in three dimensions</em></h1>
+      <p class="verse">Every star within three hundred and twenty-six light-years of the Sun.
+        The light from the farthest of them set out around the year 1700, and is arriving now.</p>
+      <p class="cue"><span>↓</span>&nbsp;&nbsp;Scroll to travel</p>
+    </div>
+  </section>
 
-  <div class="readout" aria-live="polite">
-    <span>Selected <b id="r-n">0</b> stars</span>
-    <span>Shown in 3D <b id="r-shown">0</b></span>
-    <span>Median distance <b id="r-med">–</b></span>
-    <span>Nearest <b id="r-near">–</b></span>
-  </div>
+  <section class="chapter" id="c1">
+    <div class="text">
+      <p class="eyebrow"><span class="n">01</span> Here</p>
+      <h2>A small yellow star, <em>one of many.</em></h2>
+      <p class="prose">Lit here are its nearest neighbours, the stars within twenty-five parsecs.
+        From a point 1.5 million kilometres beyond Earth, the Gaia spacecraft watched each star trace a tiny ellipse on the sky as we circled the Sun.
+        The size of that ellipse is called parallax. From the parallax, a distance. From the distance, a place.</p>
+      <p class="fact">parallax &gt; 10 milliarcseconds ⟷ distance &lt; 100 parsecs</p>
+    </div>
+  </section>
 
-  <footer>
-    Data: ESA Gaia Data Release 3 (Gaia Collaboration, 2023), from the <a href="https://gea.esac.esa.int/archive/">Gaia Archive</a>.
-    Stars with parallax &gt; 10 mas that pass Gaia's standard quality checks (RUWE &lt; 1.4 and the BP/RP colour-excess test).
-    Gaia cannot measure the very brightest stars (such as Sirius), so a few famous neighbours are missing.
-    Built for CS85 with Plotly.
-  </footer>
-</div>
+  <section class="chapter" id="c2">
+    <div class="text">
+      <p class="eyebrow"><span class="n">02</span> Sphere</p>
+      <div class="big" data-count="all">215,317</div>
+      <p class="prose">Pull back and the neighborhood becomes a sphere two hundred parsecs across, evenly sown.
+        Lit here are the red dwarfs, <span class="solc" data-count="redpct">73%</span> of everything.
+        They are small and cool, and they burn so slowly that not one has yet died.</p>
+      <p class="fact">red dwarfs: colour BP − RP &gt; 1.8</p>
+    </div>
+  </section>
 
-<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+  <section class="chapter" id="c3">
+    <div class="text">
+      <p class="eyebrow"><span class="n">03</span> Embers</p>
+      <div class="big ember" data-count="wd">15,373</div>
+      <p class="prose">White dwarfs. Each is the core a star left behind when it died: the size of Earth, heavier than half a Sun, cooling for billions of years.
+        They are old enough to have wandered everywhere, and so they are everywhere.</p>
+      <p class="fact">white dwarf: absolute G &gt; 10 + 2.5 × (BP − RP)</p>
+    </div>
+  </section>
+
+  <section class="chapter" id="c4">
+    <div class="text">
+      <p class="eyebrow"><span class="n">04</span> Giants</p>
+      <div class="big solc" data-count="giants">747</div>
+      <p class="prose">Giants. Stars in old age, the hydrogen at their centres spent, swollen to many times the Sun's size and tens of times its brightness.
+        Rare, and scattered like lanterns across the whole sphere.</p>
+      <p class="fact">giant: absolute G &lt; 3.5 and BP − RP &gt; 1.0</p>
+    </div>
+  </section>
+
+  <section class="chapter" id="c5">
+    <div class="text">
+      <p class="eyebrow"><span class="n">05</span> Family</p>
+      <h2>The Hyades <em>forty-seven parsecs toward Taurus</em></h2>
+      <p class="prose">A knot of stars born together about 650 million years ago, still travelling as one. The nearest star cluster to the Sun.
+        Here only the brightest stars are lit, in a slice of space twenty-four parsecs thick.</p>
+      <p class="fact">centre x −43.9 · y 0.0 · z −18.1 pc</p>
+    </div>
+  </section>
+
+  <section class="chapter" id="atlas">
+    <div class="text">
+      <p class="eyebrow"><span class="n">06</span> Atlas</p>
+      <h2>Every star, <em>sorted by colour and light.</em></h2>
+      <p class="prose">This is the Hertzsprung–Russell diagram. Draw a loop around any part of it, and the stars you choose will light up where they live.
+        Drag across the sky to turn it.</p>
+    </div>
+    <div class="panel" id="panel" aria-label="Hertzsprung–Russell diagram">
+      <div class="frame">
+        <canvas id="hr" aria-label="Draw a loop on the diagram to choose stars"></canvas>
+        <span class="axis l">luminous ↑</span><span class="axis b">← hot · blue</span><span class="axis r">cool · red →</span>
+      </div>
+      <div class="chips" role="group" aria-label="Choose a family of stars">
+        <button id="k-wd" data-k="wd">Embers</button>
+        <button id="k-giants" data-k="giants">Giants</button>
+        <button id="k-sun" data-k="sun">Sun-like</button>
+        <button id="k-red" data-k="red">Red dwarfs</button>
+        <button id="k-clear" data-k="clear">Clear</button>
+      </div>
+      <p id="sel" aria-live="polite">Draw a loop on the diagram.</p>
+    </div>
+      <p class="credits" style="width: var(--col)">Data: ESA Gaia Data Release 3 (Gaia Collaboration, Vallenari et al. 2023), from the
+        <a href="https://gea.esac.esa.int/archive/">Gaia Archive</a>. Stars with parallax &gt; 10 mas that pass Gaia's quality checks
+        (RUWE &lt; 1.4; BP/RP colour excess, Riello et al. 2021). Gaia cannot measure the very brightest stars, so Sirius and a few other famous neighbours are missing.
+        Star colours follow each star's measured BP − RP colour. CS85, 2026.</p>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 // ---------------------------------------------------------------------------
-// The star data. make_app.py replaces the placeholder below with real Gaia data.
-// To keep the file small, numbers are stored as whole numbers:
+// The star data. make_app.py replaces the placeholder below with real Gaia DR3 data.
+// Numbers are stored as whole numbers to keep the file small:
 //   c = colour BP-RP x 100,  g = absolute G magnitude x 100,  x/y/z = position in parsecs x 10
-// The stars are in random order, so "the first N selected stars" is a fair random sample.
+// x points to the Galactic Centre, z to the Galactic north pole, the Sun is at (0, 0, 0).
 // ---------------------------------------------------------------------------
 const RAW = __STAR_DATA__;
 const N = RAW.c.length;
-const colour = RAW.c.map(v => v / 100);
-const absG   = RAW.g.map(v => v / 100);
-const X = RAW.x.map(v => v / 10), Y = RAW.y.map(v => v / 10), Z = RAW.z.map(v => v / 10);
-const dist = X.map((x, i) => Math.hypot(x, Y[i], Z[i]));
+const colour = new Float32Array(N), absG = new Float32Array(N), pos = new Float32Array(N * 3), dist = new Float32Array(N);
+for (let i = 0; i < N; i++) {
+  colour[i] = RAW.c[i] / 100; absG[i] = RAW.g[i] / 100;
+  const x = RAW.x[i] / 10, y = RAW.y[i] / 10, z = RAW.z[i] / 10;
+  pos[3 * i] = x; pos[3 * i + 1] = y; pos[3 * i + 2] = z; dist[i] = Math.hypot(x, y, z);
+}
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const MAX_3D = 25000;  // drawing more than this many points in 3D makes the browser sluggish
-const css = getComputedStyle(document.documentElement);
-const ink = css.getPropertyValue("--ink").trim(), dim = css.getPropertyValue("--dim").trim();
-const line = css.getPropertyValue("--line").trim(), pick = css.getPropertyValue("--pick").trim();
-document.getElementById("total").textContent = N.toLocaleString();
-
-// --- Quick selections: each is a simple rule on the HR diagram --------------
-const isWhiteDwarf = i => absG[i] > 10 + 2.5 * colour[i];
-const PRESETS = {
-  wd:     { test: isWhiteDwarf,
-            note: "White dwarfs are the cooling cores of dead stars. They are old, so over billions of years they have spread evenly through the whole bubble." },
-  giants: { test: i => absG[i] < 3.5 && colour[i] > 1.0,
-            note: "Giants are rare and bright: stars that have used up the hydrogen in their cores and swollen up. Only a few hundred live this close." },
-  sun:    { test: i => colour[i] > 0.72 && colour[i] < 0.92 && absG[i] > 4 && absG[i] < 5.5,
-            note: "Stars with the Sun's colour and brightness (the Sun has BP-RP ≈ 0.82, absolute G ≈ 4.7). Sun-like stars are all around us." },
-  red:    { test: i => colour[i] > 2.5 && !isWhiteDwarf(i),
-            note: "Red dwarfs are small, cool and faint, and they are the most common stars in the Galaxy. They dominate our neighborhood." },
-  hyades: { test: i => absG[i] < 4 && !isWhiteDwarf(i),
-            note: "This picks only the brightest stars, and the map zooms into a 24-parsec-thick slice of space toward Taurus. The tight clump is the Hyades, the nearest star cluster, about 47 parsecs away. Its stars were born together about 650 million years ago. Click a different button to see the whole bubble again.",
-            only3d: i => Math.abs(Y[i]) < 12,  // just a slice through the cluster, so stars in front and behind don't hide it
-            camera: { center: { x: -0.21, y: 0, z: -0.09 }, eye: { x: -0.16, y: -0.75, z: -0.01 } },
-            label: { x: -43.9, y: 0, z: -18.1, text: "Hyades" } },
+// --- Families of stars: simple rules on colour and brightness --------------
+const isWD = i => absG[i] > 10 + 2.5 * colour[i];
+const FAMILY = {
+  all:    () => true,
+  red:    i => colour[i] > 1.8 && !isWD(i),
+  wd:     isWD,
+  giants: i => absG[i] < 3.5 && colour[i] > 1.0,
+  sun:    i => colour[i] > 0.72 && colour[i] < 0.92 && absG[i] > 4 && absG[i] < 5.5,
+  near:   i => dist[i] < 25,
+  hyades: i => absG[i] < 4 && !isWD(i) && Math.abs(pos[3 * i + 1]) < 12,  // bright stars in a slice through the cluster
 };
-
-// --- Left: the HR diagram (every star) --------------------------------------
-const axisStyle = { color: dim, gridcolor: line, zerolinecolor: line, tickfont: { family: "JetBrains Mono, monospace", size: 11 } };
-Plotly.newPlot("hr", [{
-  type: "scattergl", mode: "markers", x: colour, y: absG,
-  marker: { size: 2.5, color: "#7c87a8", opacity: 0.55 },
-  selected:   { marker: { color: pick, opacity: 0.9 } },
-  unselected: { marker: { opacity: 0.12 } },
-  hovertemplate: "colour %{x:.2f}<br>abs. G %{y:.2f}<extra></extra>",
-}], {
-  paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
-  font: { family: "Inter, sans-serif", color: ink }, margin: { l: 56, r: 14, t: 10, b: 48 },
-  dragmode: "lasso", showlegend: false,
-  xaxis: { ...axisStyle, title: { text: "Colour BP − RP  (blue → red)", font: { size: 12, color: dim } } },
-  yaxis: { ...axisStyle, autorange: "reversed", title: { text: "Absolute G magnitude  (bright ↑)", font: { size: 12, color: dim } } },
-  annotations: [
-    { x: 1.75, y: 0.2, text: "giants", showarrow: false, font: { color: dim, size: 12 } },
-    { x: 3.3, y: 8.6, text: "main sequence", showarrow: false, font: { color: dim, size: 12 }, textangle: 38 },
-    { x: 0.1, y: 16.6, text: "white dwarfs", showarrow: false, font: { color: dim, size: 12 } },
-  ],
-}, { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["toImage", "autoScale2d"] });
-
-// --- Right: the 3D map --------------------------------------------------------
-// Trace 0: a faint random sample of all stars, so you can see the shape of the bubble.
-// Trace 1: the selected stars, coloured by their real colour (blue-white to red).
-// Trace 2: the Sun.
-const background = [];
-for (let i = 0; i < 6000 && i < N; i++) background.push(i);
-const starColours = [[0, "#9db4ff"], [0.15, "#cad7ff"], [0.3, "#fff4ea"], [0.45, "#ffd2a1"], [0.7, "#ff9c5a"], [1, "#ff5a3c"]];
-const sceneAxis = t => ({ title: { text: t, font: { size: 11, color: dim } }, range: [-105, 105], color: dim,
-  gridcolor: line, zerolinecolor: line, backgroundcolor: "rgba(0,0,0,0)", showbackground: false,
-  tickfont: { family: "JetBrains Mono, monospace", size: 10 } });
-const DEFAULT_CAMERA = { eye: { x: 1.35, y: 1.35, z: 0.8 } };
-Plotly.newPlot("map", [
-  { type: "scatter3d", mode: "markers", x: background.map(i => X[i]), y: background.map(i => Y[i]), z: background.map(i => Z[i]),
-    marker: { size: 1.1, color: "#4a5272", opacity: 0.25 }, hoverinfo: "skip", name: "all stars (sample)" },
-  { type: "scatter3d", mode: "markers", x: [], y: [], z: [], customdata: [],
-    marker: { size: 2, color: [], colorscale: starColours, cmin: -0.4, cmax: 4.2, opacity: 0.9 },
-    hovertemplate: "%{customdata[0]:.1f} pc  (%{customdata[1]:.0f} light-years)<br>colour %{customdata[2]:.2f} · abs. G %{customdata[3]:.2f}<extra></extra>",
-    name: "selected" },
-  { type: "scatter3d", mode: "markers+text", x: [0], y: [0], z: [0], text: ["Sun"], textposition: "top center",
-    textfont: { color: pick, size: 12 }, marker: { size: 6, color: pick, symbol: "diamond" }, hoverinfo: "text", name: "Sun" },
-], {
-  paper_bgcolor: "rgba(0,0,0,0)", font: { family: "Inter, sans-serif", color: ink },
-  margin: { l: 0, r: 0, t: 0, b: 0 }, showlegend: false,
-  scene: { aspectmode: "cube", camera: DEFAULT_CAMERA,
-           xaxis: sceneAxis("x → Galactic Centre"), yaxis: sceneAxis("y → direction of orbit"), zaxis: sceneAxis("z → Galactic north") },
-}, { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["toImage"] });
-
-// --- Linking: whenever the selection changes, redraw the 3D map ---------------
-function show(indices, camera, label, only3d) {
-  const inView = only3d ? indices.filter(only3d) : indices;
-  const shown = inView.slice(0, MAX_3D);  // stars are in random order, so this is a random sample
-  Plotly.restyle("map", {
-    x: [shown.map(i => X[i])], y: [shown.map(i => Y[i])], z: [shown.map(i => Z[i])],
-    "marker.color": [shown.map(i => colour[i])],
-    "marker.size": shown.length > 8000 ? 1.6 : shown.length > 1500 ? 2.2 : 3.2,
-    customdata: [shown.map(i => [dist[i], dist[i] * 3.2616, colour[i], absG[i]])],
-  }, [1]);
-  const annotations = label ? [{ ...label, showarrow: true, arrowcolor: pick, ax: 70, ay: -70,
-                                  font: { color: pick, size: 13 } }] : [];
-  Plotly.relayout("map", camera ? { "scene.camera": camera, "scene.annotations": annotations }
-                                : { "scene.annotations": annotations });
-
-  const d = indices.map(i => dist[i]).sort((a, b) => a - b);
-  document.getElementById("r-n").textContent = indices.length.toLocaleString();
-  document.getElementById("r-shown").textContent =
-    shown.length.toLocaleString() + (only3d ? " (slice)" : shown.length < indices.length ? " (random sample)" : "");
-  document.getElementById("r-med").textContent = d.length ? `${d[d.length >> 1].toFixed(1)} pc` : "–";
-  document.getElementById("r-near").textContent = d.length ? `${d[0].toFixed(2)} pc · ${(d[0] * 3.2616).toFixed(1)} ly` : "–";
-}
-
-function setPressed(key) {
-  document.querySelectorAll("button.chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.preset === key)));
-}
-
-function applyPreset(key) {
-  const p = PRESETS[key];
-  const indices = [];
-  for (let i = 0; i < N; i++) if (p.test(i)) indices.push(i);
-  Plotly.restyle("hr", { selectedpoints: [indices] }, [0]);
-  setPressed(key);
-  document.getElementById("note").textContent = p.note;
-  show(indices, p.camera || DEFAULT_CAMERA, p.label, p.only3d);
-}
-
-document.querySelectorAll("button.chip").forEach(b => b.addEventListener("click", () => applyPreset(b.dataset.preset)));
-
-const hr = document.getElementById("hr");
-hr.on("plotly_selected", ev => {
-  if (!ev) return;  // a click without dragging
-  const indices = ev.points.map(p => p.pointIndex).sort((a, b) => a - b);
-  setPressed(null);
-  document.getElementById("note").textContent = `Your selection: ${indices.length.toLocaleString()} stars. Spin the map to see where they sit.`;
-  show(indices);
+const count = k => { let n = 0; for (let i = 0; i < N; i++) if (FAMILY[k](i)) n++; return n; };
+const counts = { all: N, wd: count("wd"), giants: count("giants"), red: count("red") };
+counts.redpct = Math.round(100 * counts.red / N) + "%";
+document.querySelectorAll("[data-count]").forEach(el => {
+  const v = counts[el.dataset.count]; el.textContent = typeof v === "number" ? v.toLocaleString() : v;
 });
-hr.on("plotly_deselect", () => applyPreset("wd"));
 
-applyPreset("wd");  // open on the white dwarfs: the question this project asks
+// --- Star colour: from measured BP-RP to an approximate colour on screen ----
+const RAMP = [[-0.4, [0.62, 0.72, 1.0]], [0.3, [0.92, 0.94, 1.0]], [0.8, [1.0, 0.95, 0.86]],
+              [1.5, [1.0, 0.82, 0.6]], [2.5, [1.0, 0.62, 0.42]], [4.0, [0.95, 0.42, 0.32]]];
+function starRGB(c) {
+  if (c <= RAMP[0][0]) return RAMP[0][1];
+  for (let k = 1; k < RAMP.length; k++) if (c < RAMP[k][0]) {
+    const [c0, a] = RAMP[k - 1], [c1, b] = RAMP[k], t = (c - c0) / (c1 - c0);
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  }
+  return RAMP[RAMP.length - 1][1];
+}
+const rgb = new Float32Array(N * 3), size = new Float32Array(N);
+for (let i = 0; i < N; i++) {
+  const [r, g, b] = starRGB(colour[i]); rgb[3 * i] = r; rgb[3 * i + 1] = g; rgb[3 * i + 2] = b;
+  size[i] = Math.min(3.4, Math.max(0.7, 3.2 * Math.pow(10, -0.06 * absG[i])));  // brighter stars draw larger
+}
+
+// --- The 3D sky (three.js) ----------------------------------------------------
+const canvas = document.getElementById("sky");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, preserveDrawingBuffer: true });
+renderer.setClearColor(0x030407, 1);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 5000);
+camera.up.set(0, 0, 1);
+
+const geom = new THREE.BufferGeometry();
+const focusPrev = new Float32Array(N).fill(1), focusNext = new Float32Array(N).fill(1), chosen = new Float32Array(N);
+geom.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+geom.setAttribute("aColor", new THREE.BufferAttribute(rgb, 3));
+geom.setAttribute("aSize", new THREE.BufferAttribute(size, 1));
+geom.setAttribute("aPrev", new THREE.BufferAttribute(focusPrev, 1));
+geom.setAttribute("aNext", new THREE.BufferAttribute(focusNext, 1));
+geom.setAttribute("aChosen", new THREE.BufferAttribute(chosen, 1));
+
+const uniforms = { uMix: { value: 1 }, uChosen: { value: 0 }, uPx: { value: 1 }, uGain: { value: 0.32 } };
+const starMaterial = new THREE.ShaderMaterial({
+  uniforms, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  vertexShader: `
+    attribute vec3 aColor; attribute float aSize, aPrev, aNext, aChosen;
+    uniform float uMix, uChosen, uPx, uGain;
+    varying vec3 vColor; varying float vAlpha;
+    void main() {
+      float lit = mix(mix(aPrev, aNext, uMix), aChosen, uChosen);   // 1 = in focus, 0 = in shadow
+      vec4 mv = modelViewMatrix * vec4(position, 1.0);
+      float s = mix(aSize * 0.55, max(aSize, 1.7), lit);   // lit stars never shrink to a speck, even faint white dwarfs
+      float px = s * uPx * 420.0 / max(-mv.z, 0.1);
+      gl_PointSize = clamp(px, 1.5, 14.0);
+      vAlpha = (0.05 + 0.8 * lit * uGain) * clamp(px / 1.5, 0.15, 1.0);  // tiny stars fade instead of shrinking below a pixel
+      vColor = aColor;
+      gl_Position = projectionMatrix * mv;
+    }`,
+  fragmentShader: `
+    varying vec3 vColor; varying float vAlpha;
+    void main() {
+      float r = length(gl_PointCoord - 0.5) * 2.0;
+      if (r > 1.0) discard;
+      float light = exp(-r * r * 9.0) + 0.25 * exp(-r * r * 2.5);  // bright core, soft halo
+      gl_FragColor = vec4(vColor, light * vAlpha);
+    }`,
+});
+scene.add(new THREE.Points(geom, starMaterial));
+
+// The Sun: one warm point at the origin
+const sunGeom = new THREE.BufferGeometry();
+sunGeom.setAttribute("position", new THREE.BufferAttribute(new Float32Array([0, 0, 0]), 3));
+scene.add(new THREE.Points(sunGeom, new THREE.PointsMaterial({ color: 0xffcf7a, size: 7, sizeAttenuation: false, transparent: true, opacity: 0.95 })));
+
+function resize() {
+  const w = innerWidth, h = innerHeight, dpr = Math.min(devicePixelRatio || 1, 2);
+  renderer.setPixelRatio(dpr); renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  if (w > 820) camera.setViewOffset(w, h, -w * 0.16, 0, w, h); else camera.clearViewOffset();
+  camera.updateProjectionMatrix();
+  uniforms.uPx.value = dpr * Math.max(0.6, h / 900);
+}
+addEventListener("resize", resize); resize();
+
+// --- Camera: each chapter has a place to look from ----------------------------
+// target = what the camera looks at; r = distance from it (pc); yaw, pitch = direction (radians)
+const VIEWS = {
+  // gain = how bright the lit stars are; the more stars lit at once, the lower it must be
+  c0:    { target: [0, 0, 0], r: 290, yaw: 0.6, pitch: 0.28, family: "all", gain: 0.32, drift: 1 },
+  c1:    { target: [0, 0, 0], r: 60, yaw: 1.4, pitch: 0.18, family: "near", gain: 1, drift: 0.6 },
+  c2:    { target: [0, 0, 0], r: 330, yaw: 2.2, pitch: 0.5, family: "red", gain: 0.38, drift: 1 },
+  c3:    { target: [0, 0, 0], r: 260, yaw: 3.1, pitch: 0.15, family: "wd", gain: 1, drift: 1 },
+  c4:    { target: [0, 0, 0], r: 260, yaw: 3.9, pitch: 0.42, family: "giants", gain: 1, drift: 1 },
+  c5:    { target: [-43.9, 0, -18.1], r: 62, yaw: -Math.PI / 2 + 0.25, pitch: 0.12, family: "hyades", gain: 1, drift: 0.15, label: true },
+  atlas: { target: [0, 0, 0], r: 300, yaw: 0.9, pitch: 0.35, family: "all", gain: 0.3, drift: 0.4, atlas: true },
+};
+const cam = { tx: 0, ty: 0, tz: 0, r: reduceMotion ? 290 : 1400, yaw: 0.2, pitch: 0.6 };  // opens far away and flies in
+let goal = { ...VIEWS.c0 }, goalYaw = goal.yaw, goalPitch = goal.pitch, active = "c0";
+
+const focusCache = {};
+function focusArray(k) {
+  if (!focusCache[k]) { const a = new Float32Array(N); for (let i = 0; i < N; i++) a[i] = FAMILY[k](i) ? 1 : 0; focusCache[k] = a; }
+  return focusCache[k];
+}
+function setFamily(k) {
+  const m = uniforms.uMix.value;  // freeze the current blend as the new starting point, then fade to the new family
+  for (let i = 0; i < N; i++) focusPrev[i] += (focusNext[i] - focusPrev[i]) * m;
+  focusNext.set(focusArray(k));
+  geom.attributes.aPrev.needsUpdate = true; geom.attributes.aNext.needsUpdate = true;
+  uniforms.uMix.value = 0;
+}
+
+function goTo(id) {
+  if (id === active && id !== "c0") return;
+  const v = VIEWS[id]; if (!v) return;
+  if (VIEWS[active].family !== v.family || id === "c0") setFamily(v.family);
+  active = id; goal = v; goalYaw = v.yaw; goalPitch = v.pitch;
+  document.body.classList.toggle("atlas", !!v.atlas);
+  document.querySelectorAll("nav.index a").forEach(a => a.classList.toggle("on", a.dataset.c === id));
+  document.getElementById("lab-hyades").style.opacity = v.label ? 1 : 0;
+}
+
+const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) goTo(e.target.id); }),
+                                    { rootMargin: "-45% 0px -45% 0px" });
+document.querySelectorAll(".chapter").forEach(s => io.observe(s));
+
+// In the atlas, dragging across the sky turns it
+const atlasEl = document.getElementById("atlas");
+let dragging = null;
+atlasEl.addEventListener("pointerdown", e => {
+  if (active === "atlas" && !e.target.closest(".panel, a")) dragging = { x: e.clientX, y: e.clientY };  // drawing on the diagram should not spin the sky
+});
+addEventListener("pointermove", e => {
+  if (!dragging) return;
+  goalYaw -= (e.clientX - dragging.x) * 0.005;
+  goalPitch = Math.max(-1.4, Math.min(1.4, goalPitch + (e.clientY - dragging.y) * 0.004));
+  dragging = { x: e.clientX, y: e.clientY };
+});
+addEventListener("pointerup", () => dragging = null);
+addEventListener("pointercancel", () => dragging = null);
+
+// Project a 3D point to the screen, for the floating labels
+const tmp = new THREE.Vector3();
+function placeLabel(el, x, y, z) {
+  tmp.set(x, y, z).project(camera);
+  const visible = tmp.z < 1;
+  el.style.transform = `translate(${(tmp.x + 1) / 2 * innerWidth + 10}px, ${(1 - tmp.y) / 2 * innerHeight - 6}px)`;
+  el.style.visibility = visible ? "visible" : "hidden";
+}
+
+const readout = document.getElementById("readout");
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  const ease = 1 - Math.exp(-dt * (reduceMotion ? 20 : 1.4));
+  if (!reduceMotion && !dragging) goalYaw += dt * 0.025 * goal.drift;  // the sky turns slowly on its own
+  cam.tx += (goal.target[0] - cam.tx) * ease; cam.ty += (goal.target[1] - cam.ty) * ease; cam.tz += (goal.target[2] - cam.tz) * ease;
+  cam.r += (goal.r * (innerWidth > 820 ? 1 : 1.6) - cam.r) * ease;  // phones: stand farther back cam.yaw += (goalYaw - cam.yaw) * ease; cam.pitch += (goalPitch - cam.pitch) * ease;
+  uniforms.uMix.value = Math.min(1, uniforms.uMix.value + dt * (reduceMotion ? 10 : 0.9));
+  const choosing = active === "atlas" && hasChoice;
+  uniforms.uChosen.value += ((choosing ? 1 : 0) - uniforms.uChosen.value) * Math.min(1, dt * 4);
+  const gainGoal = choosing ? Math.min(1, 0.3 + 6000 / Math.max(1, chosenList.length)) : goal.gain;
+  uniforms.uGain.value += (gainGoal - uniforms.uGain.value) * Math.min(1, dt * 2);
+
+  const cp = Math.cos(cam.pitch);
+  camera.position.set(cam.tx + cam.r * cp * Math.cos(cam.yaw), cam.ty + cam.r * cp * Math.sin(cam.yaw), cam.tz + cam.r * Math.sin(cam.pitch));
+  camera.lookAt(cam.tx, cam.ty, cam.tz);
+  renderer.render(scene, camera);
+
+  placeLabel(document.getElementById("lab-sun"), 0, 0, 0);
+  placeLabel(document.getElementById("lab-hyades"), -43.9, 0, -18.1);
+  const d = camera.position.length();
+  readout.textContent = `camera ${d.toFixed(0)} pc · ${(d * 3.2616).toFixed(0)} light-years from the Sun`;
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// --- The atlas: an HR diagram you can draw on ---------------------------------
+const hr = document.getElementById("hr"), hctx = hr.getContext("2d");
+const C_MIN = -0.6, C_MAX = 5.0, G_MIN = -2, G_MAX = 17.5;  // axis ranges: colour, absolute magnitude
+let W = 0, H = 0, base = null, hx = null, hy = null, hasChoice = false, lasso = null, chosenList = [];
+
+function layoutHR() {
+  const dpr = Math.min(devicePixelRatio || 1, 2), rect = hr.getBoundingClientRect();
+  if (!rect.width) return;
+  W = Math.round(rect.width * dpr); H = Math.round(rect.height * dpr); hr.width = W; hr.height = H;
+  hx = new Float32Array(N); hy = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    // colours were stored rounded to 0.01; a spread smaller than that rounding hides the stripes it would cause
+    const jx = ((i * 2654435761) % 1000) / 1000 - 0.5, jy = ((i * 40503) % 1000) / 1000 - 0.5;
+    hx[i] = (colour[i] + 0.01 * jx - C_MIN) / (C_MAX - C_MIN) * W;
+    hy[i] = (absG[i] + 0.01 * jy - G_MIN) / (G_MAX - G_MIN) * H;  // bright at the top
+  }
+  base = density(() => true, 1);
+  drawHR();
+}
+
+// Paint stars as light: count stars per pixel, then brighten on a log scale, in each star's own colour
+function density(keep, gain, tint) {
+  const n = new Float32Array(W * H), cr = new Float32Array(W * H), cg = new Float32Array(W * H), cb = new Float32Array(W * H);
+  for (let i = 0; i < N; i++) {
+    if (!keep(i)) continue;
+    const px = hx[i] | 0, py = hy[i] | 0;
+    if (px < 0 || py < 0 || px >= W || py >= H) continue;
+    const p = py * W + px; n[p]++; cr[p] += rgb[3 * i]; cg[p] += rgb[3 * i + 1]; cb[p] += rgb[3 * i + 2];
+  }
+  let max = 1; for (let p = 0; p < n.length; p++) if (n[p] > max) max = n[p];
+  const img = hctx.createImageData(W, H), L = Math.log(1 + max);
+  for (let p = 0; p < n.length; p++) {
+    if (!n[p]) continue;
+    const a = Math.min(1, gain * (0.35 + 0.65 * Math.log(1 + n[p]) / L));
+    const r = tint ? tint[0] : cr[p] / n[p], g = tint ? tint[1] : cg[p] / n[p], b = tint ? tint[2] : cb[p] / n[p];
+    img.data[4 * p] = 255 * r; img.data[4 * p + 1] = 255 * g; img.data[4 * p + 2] = 255 * b; img.data[4 * p + 3] = 255 * a;
+  }
+  return createImageBitmap(img);
+}
+
+let chosenLayer = null;
+async function drawHR() {
+  if (!base) return;
+  const b = await base, c = chosenLayer ? await chosenLayer : null;
+  hctx.clearRect(0, 0, W, H);
+  hctx.globalAlpha = c ? 0.28 : 1; hctx.drawImage(b, 0, 0); hctx.globalAlpha = 1;
+  if (c) hctx.drawImage(c, 0, 0);
+  if (lasso && lasso.length > 1) {
+    hctx.strokeStyle = "rgba(255,207,122,0.9)"; hctx.lineWidth = Math.max(1, W / 340);
+    hctx.beginPath(); hctx.moveTo(lasso[0][0], lasso[0][1]);
+    for (const [x, y] of lasso) hctx.lineTo(x, y);
+    hctx.stroke();
+  }
+}
+
+function choose(indices, label) {
+  chosen.fill(0); for (const i of indices) chosen[i] = 1;
+  geom.attributes.aChosen.needsUpdate = true;
+  hasChoice = indices.length > 0; chosenList = indices;
+  const set = new Uint8Array(N); for (const i of indices) set[i] = 1;
+  chosenLayer = hasChoice ? density(i => set[i] === 1, 1.4, [1.0, 0.81, 0.48]) : null;
+  drawHR();
+  const sel = document.getElementById("sel");
+  if (!hasChoice) { sel.textContent = "Draw a loop on the diagram."; return; }
+  const d = indices.map(i => dist[i]).sort((a, b) => a - b);
+  sel.innerHTML = `<b>${indices.length.toLocaleString()}</b> ${label || "stars chosen"} · median distance <b>${d[d.length >> 1].toFixed(1)} pc</b><br>` +
+                  `nearest <b>${d[0].toFixed(2)} pc</b>, light that left ${Math.round(d[0] * 3.2616)} years ago`;
+}
+
+// Lasso: collect points while the pointer is down, then keep the stars inside the loop
+function inside(px, py, poly) {
+  let ok = false;
+  for (let a = 0, b = poly.length - 1; a < poly.length; b = a++) {
+    const [xa, ya] = poly[a], [xb, yb] = poly[b];
+    if ((ya > py) !== (yb > py) && px < (xb - xa) * (py - ya) / (yb - ya) + xa) ok = !ok;
+  }
+  return ok;
+}
+const toCanvas = e => { const r = hr.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H]; };
+hr.addEventListener("pointerdown", e => { hr.setPointerCapture(e.pointerId); lasso = [toCanvas(e)]; drawHR(); });
+hr.addEventListener("pointermove", e => { if (lasso) { lasso.push(toCanvas(e)); drawHR(); } });
+hr.addEventListener("pointerup", () => {
+  if (!lasso) return;
+  const poly = lasso; lasso = null;
+  pressed(null);
+  if (poly.length < 3) { choose([]); return; }
+  const picked = []; for (let i = 0; i < N; i++) if (inside(hx[i], hy[i], poly)) picked.push(i);
+  choose(picked);
+});
+
+const LABELS = { wd: "white dwarfs", giants: "giants", sun: "Sun-like stars", red: "red dwarfs" };
+function pressed(k) { document.querySelectorAll(".chips button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.k === k))); }
+document.querySelectorAll(".chips button").forEach(b => b.addEventListener("click", () => {
+  const k = b.dataset.k;
+  if (k === "clear") { pressed(null); choose([]); return; }
+  const picked = []; for (let i = 0; i < N; i++) if (FAMILY[k](i)) picked.push(i);
+  pressed(k); choose(picked, LABELS[k]);
+}));
+
+new ResizeObserver(() => { layoutHR(); if (chosenList.length) choose(chosenList); }).observe(hr);
 </script>

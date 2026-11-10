@@ -4,10 +4,22 @@
 
 ## The app
 
-`neighborhood_app.html` is the Thursday prototype: an HR diagram linked to a 3D map.
-Drag a box or lasso on the HR diagram and the 3D map shows where those stars are.
-Buttons give quick selections (white dwarfs, giants, Sun-like stars, red dwarfs, and the Hyades star cluster).
-To use it, download the file and open it in a web browser (it needs internet access to load the Plotly library).
+`neighborhood_app.html` is an interactive, scroll-driven piece. A field of all 215,317 real stars,
+drawn in their measured colours with three.js, fills the screen, and the camera travels as you read:
+
+| Chapter | What lights up |
+|---|---|
+| 00 Arrival | the whole 100 pc sphere, seen from outside |
+| 01 Here | the Sun's nearest neighbours (within 25 pc) |
+| 02 Sphere | the red dwarfs, 73% of all the stars |
+| 03 Embers | the white dwarfs |
+| 04 Giants | the giants |
+| 05 Family | the Hyades cluster, seen through a 24 pc slice |
+| 06 Atlas | you choose: draw a loop on the HR diagram and those stars light up in 3D |
+
+Every number in the text is computed from the data when the page loads.
+To use it, download the file and open it in a web browser (it loads three.js and fonts from the internet).
+`app_template.html` is the page design; `make_app.py` puts the data into it.
 
 ## How to rebuild everything (run from the repo root)
 
