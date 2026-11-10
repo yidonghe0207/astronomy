@@ -24,7 +24,44 @@
   body { font-family: var(--font-verse); margin: 0; overflow-x: hidden; }
   body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--void); }
 
-  #sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; pointer-events: none; }
+  #sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; cursor: grab; touch-action: pan-y; }
+  #sky.dragging { cursor: grabbing; }
+  body.explore #sky { touch-action: none; }
+  /* the story text floats above the sky but lets clicks and drags fall through to it */
+  main { pointer-events: none; }
+  main a, main button { pointer-events: auto; }
+  body.explore main, body.explore nav.index { opacity: 0; pointer-events: none !important; }
+  body.explore main * { pointer-events: none !important; }
+  body.explore .scrim { opacity: 0; }
+  main, .scrim { transition: opacity 0.6s; }
+
+  /* sky controls, top right */
+  .dock { position: fixed; z-index: 6; top: calc(16px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
+          display: grid; justify-items: end; gap: 8px; }
+  .dock .row { display: flex; gap: 6px; }
+  .dock button { font-family: var(--font-data); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink);
+                 background: rgba(3, 4, 7, 0.6); border: 1px solid var(--hair); min-width: 34px; height: 34px; padding: 0 10px; cursor: pointer; }
+  .dock button.sym { font-size: 1rem; letter-spacing: 0; padding: 0; }
+  .dock button:hover { border-color: var(--ink); }
+  .dock button:focus-visible { outline: 1px solid var(--sol); outline-offset: 2px; }
+  #explore[aria-pressed="true"] { border-color: var(--sol); color: var(--sol); }
+  .hint { margin: 0; font-family: var(--font-data); font-weight: 300; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+          color: var(--mute); text-align: right; background: rgba(3, 4, 7, 0.7); padding: 3px 6px; }
+
+  /* the card that appears beside a star you click */
+  .ring { position: fixed; left: 0; top: 0; z-index: 4; width: 26px; height: 26px; margin: -13px 0 0 -13px; border: 1px solid var(--sol);
+          border-radius: 50%; pointer-events: none; }
+  .card { position: fixed; left: 0; top: 0; z-index: 5; width: 250px; padding: 12px 14px 12px; display: grid; gap: 6px;
+          background: rgba(3, 4, 7, 0.82); border: 1px solid var(--hair); border-left: 1px solid var(--sol); backdrop-filter: blur(6px); }
+  .card .kind { margin: 0; font-family: var(--font-data); font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sol); padding-right: 24px; }
+  .card .far { margin: 0; font-family: var(--font-display); font-size: 1.5rem; line-height: 1.05; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .card .far em { font-family: var(--font-verse); font-style: italic; font-weight: 300; font-size: 1.05rem; color: var(--mute); letter-spacing: 0; display: block; margin-top: 2px; }
+  .card dl { margin: 4px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-family: var(--font-data); font-weight: 300;
+             font-size: 0.68rem; color: var(--mute); font-variant-numeric: tabular-nums; border-top: 1px solid var(--hair); padding-top: 8px; }
+  .card dd { margin: 0; color: var(--ink); text-align: right; }
+  .card .x { position: absolute; right: 6px; top: 6px; width: 26px; height: 26px; border: 0; background: transparent; color: var(--mute);
+             font-size: 1.1rem; cursor: pointer; line-height: 1; }
+  .card .x:hover { color: var(--ink); } .card .x:focus-visible { outline: 1px solid var(--sol); }
   .label3d { position: fixed; left: 0; top: 0; z-index: 1; pointer-events: none; font-family: var(--font-data);
              font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sol);
              white-space: nowrap; transition: opacity 0.8s; }
@@ -76,8 +113,7 @@
              text-transform: uppercase; font-variant-numeric: tabular-nums; pointer-events: none; }
 
   /* the atlas: final chapter, where the visitor takes over */
-  #atlas { min-height: 100vh; cursor: grab; touch-action: pan-y; align-content: start; padding-top: 14vh; }
-  #atlas:active { cursor: grabbing; }
+  #atlas { min-height: 100vh; align-content: start; padding-top: 14vh; }
   #atlas .text { pointer-events: none; }
   .panel { position: fixed; z-index: 4; right: max(64px, env(safe-area-inset-right, 0px)); bottom: calc(24px + env(safe-area-inset-bottom, 0px));
            width: 340px; display: grid; gap: 10px; opacity: 0; transform: translateY(16px); pointer-events: none;
@@ -106,6 +142,8 @@
     #hr { height: 230px; }
     #atlas { padding-top: 10vh; }
     .readout { display: none; }
+    .dock .hint { max-width: 14rem; }
+    .card { width: min(250px, calc(100vw - 32px)); }
     body.atlas .scrim { background: linear-gradient(180deg, rgba(3, 4, 7, 0.92) 0%, rgba(3, 4, 7, 0.75) 45%, rgba(3, 4, 7, 0) 70%); }
     .scrim { background: linear-gradient(0deg, rgba(3, 4, 7, 0.9) 0%, rgba(3, 4, 7, 0.55) 40%, rgba(3, 4, 7, 0) 62%); }
   }
@@ -127,6 +165,24 @@
   <a href="#atlas" data-c="atlas"><span>Atlas</span>06</a>
 </nav>
 <div class="readout" id="readout">camera 0 pc from the Sun</div>
+
+<div class="dock" role="toolbar" aria-label="Sky controls">
+  <div class="row">
+    <button class="sym" id="zin" aria-label="Zoom in" title="Zoom in (+)">+</button>
+    <button class="sym" id="zout" aria-label="Zoom out" title="Zoom out (−)">−</button>
+    <button id="zreset" title="Return to this chapter's view">Reset</button>
+    <button id="explore" aria-pressed="false" title="Hide the story and move freely (E)">Explore</button>
+  </div>
+  <p class="hint" id="hint">drag to turn · shift-drag to pan · click a star</p>
+</div>
+
+<div class="ring" id="ring" hidden></div>
+<div class="card" id="card" hidden role="dialog" aria-label="Star details">
+  <button class="x" id="card-x" aria-label="Close">×</button>
+  <p class="kind" id="card-kind"></p>
+  <p class="far" id="card-far"></p>
+  <dl id="card-dl"></dl>
+</div>
 
 <main>
   <section class="chapter" id="c0">
@@ -196,7 +252,7 @@
       <p class="eyebrow"><span class="n">06</span> Atlas</p>
       <h2>Every star, <em>sorted by colour and light.</em></h2>
       <p class="prose">This is the Hertzsprung–Russell diagram. Draw a loop around any part of it, and the stars you choose will light up where they live.
-        Drag across the sky to turn it.</p>
+        Drag across the sky to turn it, and click any star to meet it.</p>
     </div>
     <div class="panel" id="panel" aria-label="Hertzsprung–Russell diagram">
       <div class="frame">
@@ -364,7 +420,7 @@ function goTo(id) {
   if (id === active && id !== "c0") return;
   const v = VIEWS[id]; if (!v) return;
   if (VIEWS[active].family !== v.family || id === "c0") setFamily(v.family);
-  active = id; goal = v; goalYaw = v.yaw; goalPitch = v.pitch;
+  active = id; goal = v; resetUser();
   document.body.classList.toggle("atlas", !!v.atlas);
   document.querySelectorAll("nav.index a").forEach(a => a.classList.toggle("on", a.dataset.c === id));
   document.getElementById("lab-hyades").style.opacity = v.label ? 1 : 0;
@@ -374,20 +430,166 @@ const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIn
                                     { rootMargin: "-45% 0px -45% 0px" });
 document.querySelectorAll(".chapter").forEach(s => io.observe(s));
 
-// In the atlas, dragging across the sky turns it
-const atlasEl = document.getElementById("atlas");
-let dragging = null;
-atlasEl.addEventListener("pointerdown", e => {
-  if (active === "atlas" && !e.target.closest(".panel, a")) dragging = { x: e.clientX, y: e.clientY };  // drawing on the diagram should not spin the sky
+// --- Moving through the sky yourself ------------------------------------------
+// Drag to turn, shift-drag (or right-drag, or two fingers) to pan, +/− or pinch to zoom.
+// The scroll wheel moves through the story; in Explore mode it zooms instead.
+const sky = document.getElementById("sky");
+const user = { zoom: 1, pan: [0, 0, 0], touched: false };  // your changes on top of the chapter's view
+function resetUser() { user.zoom = 1; user.pan = [0, 0, 0]; user.touched = false; goalYaw = goal.yaw; goalPitch = goal.pitch; }
+const zoomBy = f => { user.zoom = Math.max(0.03, Math.min(3, user.zoom * f)); user.touched = true; };
+let exploring = false, dragging = null;
+const pointers = new Map();
+
+function turn(dx, dy) {
+  goalYaw -= dx * 0.005;
+  goalPitch = Math.max(-1.45, Math.min(1.45, goalPitch + dy * 0.004));
+  user.touched = true;
+}
+function pan(dx, dy) {
+  const e = camera.matrixWorld.elements, k = cam.r * 0.0016 * (900 / innerHeight);  // camera's right = e[0..2], up = e[4..6]
+  for (let j = 0; j < 3; j++) user.pan[j] += (-dx * e[j] + dy * e[4 + j]) * k;
+  user.touched = true;
+}
+
+sky.addEventListener("contextmenu", e => e.preventDefault());
+sky.addEventListener("pointerdown", e => {
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  sky.setPointerCapture(e.pointerId);
+  dragging = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, panning: e.shiftKey || e.button === 2, moved: 0 };
+  sky.classList.add("dragging");
 });
-addEventListener("pointermove", e => {
-  if (!dragging) return;
-  goalYaw -= (e.clientX - dragging.x) * 0.005;
-  goalPitch = Math.max(-1.4, Math.min(1.4, goalPitch + (e.clientY - dragging.y) * 0.004));
-  dragging = { x: e.clientX, y: e.clientY };
+sky.addEventListener("pointermove", e => {
+  if (!pointers.has(e.pointerId)) return;
+  const prev = pointers.get(e.pointerId), now = { x: e.clientX, y: e.clientY };
+  if (pointers.size === 2) {  // two fingers: pinch to zoom, move together to pan
+    const [idA, idB] = [...pointers.keys()], other = pointers.get(idA === e.pointerId ? idB : idA);
+    const before = Math.hypot(prev.x - other.x, prev.y - other.y), after = Math.hypot(now.x - other.x, now.y - other.y);
+    if (before > 10) zoomBy(before / after);
+    pan((now.x - prev.x) / 2, (now.y - prev.y) / 2);
+    if (dragging) dragging.moved = 99;
+  } else if (dragging) {
+    const dx = now.x - prev.x, dy = now.y - prev.y;
+    dragging.moved = Math.max(dragging.moved, Math.hypot(now.x - dragging.x0, now.y - dragging.y0));
+    if (dragging.panning) pan(dx, dy); else turn(dx, dy);
+  }
+  pointers.set(e.pointerId, now);
 });
-addEventListener("pointerup", () => dragging = null);
-addEventListener("pointercancel", () => dragging = null);
+function release(e) {
+  pointers.delete(e.pointerId);
+  if (dragging && pointers.size === 0) {
+    if (dragging.moved < 5 && e.type === "pointerup") pick(e.clientX, e.clientY);  // a click, not a drag
+    dragging = null; sky.classList.remove("dragging");
+  }
+}
+sky.addEventListener("pointerup", release);
+sky.addEventListener("pointercancel", release);  // on phones, a vertical swipe is handed back to the page to scroll
+sky.addEventListener("wheel", e => {
+  if (!exploring && !e.ctrlKey) return;  // let the wheel scroll the story (a trackpad pinch arrives with ctrlKey)
+  e.preventDefault();
+  zoomBy(Math.exp(e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)));
+}, { passive: false });
+
+document.getElementById("zin").addEventListener("click", () => zoomBy(0.7));
+document.getElementById("zout").addEventListener("click", () => zoomBy(1 / 0.7));
+document.getElementById("zreset").addEventListener("click", resetUser);
+
+const hint = document.getElementById("hint"), touchFirst = matchMedia("(pointer: coarse)").matches;
+function setHint() {
+  hint.textContent = touchFirst
+    ? (exploring ? "drag to turn · pinch to zoom · two fingers to pan · tap a star" : "swipe sideways to turn · tap a star")
+    : (exploring ? "drag to turn · scroll to zoom · shift-drag to pan · click a star" : "drag to turn · shift-drag to pan · click a star");
+}
+function setExplore(on) {
+  exploring = on;
+  document.body.classList.toggle("explore", on);
+  document.documentElement.style.overflow = on ? "hidden" : "";
+  const btn = document.getElementById("explore");
+  btn.setAttribute("aria-pressed", String(on)); btn.textContent = on ? "Back to story" : "Explore";
+  if (!on) resetUser();
+  setHint();
+}
+document.getElementById("explore").addEventListener("click", () => setExplore(!exploring));
+addEventListener("keydown", e => {
+  if (e.target.closest && e.target.closest("input, textarea")) return;
+  if (e.key === "Escape") { if (!card.hidden) closeCard(); else if (exploring) setExplore(false); }
+  else if (e.key === "e" || e.key === "E") setExplore(!exploring);
+  else if (e.key === "+" || e.key === "=") zoomBy(0.8);
+  else if (e.key === "-" || e.key === "_") zoomBy(1.25);
+  else if (exploring && e.key.startsWith("Arrow")) {
+    e.preventDefault();
+    const step = 24; turn(e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0, e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0);
+  }
+});
+setHint();
+
+// --- Clicking a star ------------------------------------------------------------
+// Project every star to the screen and take the nearest one to the click, preferring lit stars.
+const card = document.getElementById("card"), ring = document.getElementById("ring");
+let picked = -1;
+const vp = new THREE.Matrix4();
+function pick(sx, sy) {
+  camera.updateMatrixWorld(); vp.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+  const e = vp.elements, W2 = innerWidth, H2 = innerHeight, useChosen = uniforms.uChosen.value > 0.5;
+  let bestLit = -1, dLit = 14 * 14, bestAny = -1, dAny = 7 * 7;
+  for (let i = 0; i < N; i++) {
+    const x = pos[3 * i], y = pos[3 * i + 1], z = pos[3 * i + 2];
+    const w = e[3] * x + e[7] * y + e[11] * z + e[15];
+    if (w < 0.2) continue;  // behind the camera
+    const px = ((e[0] * x + e[4] * y + e[8] * z + e[12]) / w + 1) / 2 * W2;
+    const py = (1 - (e[1] * x + e[5] * y + e[9] * z + e[13]) / w) / 2 * H2;
+    const d2 = (px - sx) ** 2 + (py - sy) ** 2;
+    const lit = useChosen ? chosen[i] > 0.5 : focusNext[i] > 0.5;
+    if (lit && d2 < dLit) { dLit = d2; bestLit = i; }
+    else if (!lit && d2 < dAny) { dAny = d2; bestAny = i; }
+  }
+  const i = bestLit >= 0 ? bestLit : bestAny;
+  if (i < 0) { closeCard(); return; }
+  showCard(i);
+}
+
+function kindOf(i) {
+  if (isWD(i)) return "White dwarf";
+  if (FAMILY.giants(i)) return "Giant";
+  if (FAMILY.sun(i)) return "Sun-like star";
+  if (FAMILY.red(i)) return "Red dwarf";
+  return absG[i] < 4 ? "Bright main-sequence star" : "Main-sequence star";
+}
+function fmtTimes(v) {  // a brightness ratio written the way a person would say it
+  if (v >= 10) return Math.round(v).toLocaleString() + " ×";
+  if (v >= 0.1) return v.toFixed(2) + " ×";
+  return v.toPrecision(1) + " ×";
+}
+function showCard(i) {
+  picked = i;
+  const d = dist[i], ly = d * 3.2616, x = pos[3 * i], y = pos[3 * i + 1], z = pos[3 * i + 2];
+  const lon = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360, lat = Math.asin(z / d) * 180 / Math.PI;
+  const year = Math.round(new Date().getFullYear() - ly);
+  const sunRatio = Math.pow(10, -0.4 * (absG[i] - 4.67));  // the Sun's absolute G magnitude is about 4.67
+  document.getElementById("card-kind").textContent = kindOf(i);
+  document.getElementById("card-far").innerHTML = `${d.toFixed(1)} pc<em>${Math.round(ly)} light-years · its light left in ${year}</em>`;
+  document.getElementById("card-dl").innerHTML =
+    `<dt>brightness</dt><dd>${fmtTimes(sunRatio)} the Sun</dd>` +
+    `<dt>colour BP − RP</dt><dd>${colour[i].toFixed(2)}</dd>` +
+    `<dt>absolute G</dt><dd>${absG[i].toFixed(2)}</dd>` +
+    `<dt>galactic l, b</dt><dd>${lon.toFixed(1)}°, ${lat >= 0 ? "+" : ""}${lat.toFixed(1)}°</dd>` +
+    `<dt>x, y, z</dt><dd>${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)} pc</dd>`;
+  card.hidden = false; ring.hidden = false; user.touched = true;  // stop the slow drift so the star stays put
+  drawHR();
+}
+function closeCard() { picked = -1; card.hidden = true; ring.hidden = true; drawHR(); }
+document.getElementById("card-x").addEventListener("click", closeCard);
+
+function placeCard() {
+  if (picked < 0) return;
+  tmp.set(pos[3 * picked], pos[3 * picked + 1], pos[3 * picked + 2]).project(camera);
+  const sx = (tmp.x + 1) / 2 * innerWidth, sy = (1 - tmp.y) / 2 * innerHeight, onScreen = tmp.z < 1;
+  ring.style.transform = `translate(${sx}px, ${sy}px)`; ring.style.visibility = onScreen ? "visible" : "hidden";
+  const cw = card.offsetWidth, ch = card.offsetHeight;
+  let cx = sx + 24, cy = sy - ch / 2;
+  if (cx + cw > innerWidth - 16) cx = sx - 24 - cw;  // flip to the left near the right edge
+  cx = Math.max(16, Math.min(innerWidth - cw - 16, cx)); cy = Math.max(64, Math.min(innerHeight - ch - 16, cy));
+  card.style.transform = `translate(${cx}px, ${cy}px)`;
+}
 
 // Project a 3D point to the screen, for the floating labels
 const tmp = new THREE.Vector3();
@@ -402,10 +604,11 @@ const readout = document.getElementById("readout");
 let last = performance.now();
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
-  const ease = 1 - Math.exp(-dt * (reduceMotion ? 20 : 1.4));
-  if (!reduceMotion && !dragging) goalYaw += dt * 0.025 * goal.drift;  // the sky turns slowly on its own
-  cam.tx += (goal.target[0] - cam.tx) * ease; cam.ty += (goal.target[1] - cam.ty) * ease; cam.tz += (goal.target[2] - cam.tz) * ease;
-  cam.r += (goal.r * (innerWidth > 820 ? 1 : 1.6) - cam.r) * ease;  // phones: stand farther back cam.yaw += (goalYaw - cam.yaw) * ease; cam.pitch += (goalPitch - cam.pitch) * ease;
+  const ease = 1 - Math.exp(-dt * (reduceMotion ? 20 : user.touched ? 6 : 1.4));  // your own moves respond quickly
+  if (!reduceMotion && !dragging && !user.touched) goalYaw += dt * 0.025 * goal.drift;  // the sky turns slowly until you touch it
+  cam.tx += (goal.target[0] + user.pan[0] - cam.tx) * ease; cam.ty += (goal.target[1] + user.pan[1] - cam.ty) * ease;
+  cam.tz += (goal.target[2] + user.pan[2] - cam.tz) * ease;
+  cam.r += (goal.r * (innerWidth > 820 ? 1 : 1.6) * user.zoom - cam.r) * ease;  // phones: stand farther back cam.yaw += (goalYaw - cam.yaw) * ease; cam.pitch += (goalPitch - cam.pitch) * ease;
   uniforms.uMix.value = Math.min(1, uniforms.uMix.value + dt * (reduceMotion ? 10 : 0.9));
   const choosing = active === "atlas" && hasChoice;
   uniforms.uChosen.value += ((choosing ? 1 : 0) - uniforms.uChosen.value) * Math.min(1, dt * 4);
@@ -419,7 +622,8 @@ function frame(now) {
 
   placeLabel(document.getElementById("lab-sun"), 0, 0, 0);
   placeLabel(document.getElementById("lab-hyades"), -43.9, 0, -18.1);
-  const d = camera.position.length();
+  placeCard();
+  const d = camera.position.length();  // distance of the camera from the Sun
   readout.textContent = `camera ${d.toFixed(0)} pc · ${(d * 3.2616).toFixed(0)} light-years from the Sun`;
   requestAnimationFrame(frame);
 }
@@ -477,6 +681,11 @@ async function drawHR() {
     hctx.beginPath(); hctx.moveTo(lasso[0][0], lasso[0][1]);
     for (const [x, y] of lasso) hctx.lineTo(x, y);
     hctx.stroke();
+  }
+  if (picked >= 0 && hx) {  // the star you clicked in the sky, found on the diagram
+    const k = W / 340;
+    hctx.strokeStyle = "rgba(255,207,122,0.95)"; hctx.lineWidth = k;
+    hctx.beginPath(); hctx.arc(hx[picked], hy[picked], 7 * k, 0, 2 * Math.PI); hctx.stroke();
   }
 }
 

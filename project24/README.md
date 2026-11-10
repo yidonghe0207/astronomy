@@ -17,6 +17,11 @@ drawn in their measured colours with three.js, fills the screen, and the camera 
 | 05 Family | the Hyades cluster, seen through a 24 pc slice |
 | 06 Atlas | you choose: draw a loop on the HR diagram and those stars light up in 3D |
 
+**Moving around:** drag the sky to turn it, shift-drag (or right-drag, or two fingers) to pan,
+and use the + / − buttons, the + / − keys or a pinch to zoom. **Explore** (or the E key) hides the story so
+the scroll wheel zooms and the arrow keys turn the sky. **Click any star** to see what kind of star it is,
+its distance, the year its light left it, its brightness compared with the Sun, and its position.
+
 Every number in the text is computed from the data when the page loads.
 To use it, download the file and open it in a web browser (it loads three.js and fonts from the internet).
 `app_template.html` is the page design; `make_app.py` puts the data into it.
