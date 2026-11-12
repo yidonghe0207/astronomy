@@ -122,7 +122,8 @@
   nav.index a:focus-visible { outline: 1px solid var(--sol); outline-offset: 4px; }
 
   /* the readout, bottom left */
-  .readout { position: fixed; left: max(16px, env(safe-area-inset-left, 0px), 8vw); top: calc(24px + env(safe-area-inset-top, 0px)); z-index: 3;
+  .readout { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); top: calc(88px + env(safe-area-inset-top, 0px)); z-index: 3;
+             text-align: right; background: rgba(3, 4, 7, 0.7); padding: 3px 6px;
              font-family: var(--font-data); font-weight: 300; font-size: 0.68rem; letter-spacing: 0.1em; color: var(--mute);
              text-transform: uppercase; font-variant-numeric: tabular-nums; pointer-events: none; }
 
