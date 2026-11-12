@@ -53,6 +53,62 @@ def load_stars():
     return stars
 
 
+def ask_gaia(query, tries=4):
+    """Run a query on the Gaia Archive, trying again if the archive has a hiccup.
+    (In November 2026 it often answered with a random "Error 500" that went away on retry.)"""
+    import time
+    for attempt in range(1, tries + 1):
+        try:
+            return Gaia.launch_job_async(query).get_results().to_pandas()
+        except Exception as error:
+            if attempt == tries:
+                raise
+            print(f"  archive error ({str(error).splitlines()[0]}), retrying in {2 ** attempt} s")
+            time.sleep(2 ** attempt)
+
+
+CATALOGUES = {  # short name -> Gaia's cross-match table for that catalogue
+    "hip": "hipparcos2_best_neighbour",        # Hipparcos: ~118,000 bright stars
+    "tyc": "tycho2tdsc_merge_best_neighbour",  # Tycho-2: ~2.5 million stars
+}
+
+
+def load_catalogue_ids():
+    """Hipparcos (HIP) and Tycho-2 (TYC) numbers for our stars, from the Gaia team's own
+    cross-match tables in the Gaia Archive. These are real catalogue designations that
+    SIMBAD and star charts use. Each catalogue is cached in data/ as soon as it arrives;
+    if one cannot be downloaded, we carry on without it and say so."""
+    import pandas as pd
+
+    ids = None
+    for name, table in CATALOGUES.items():
+        cache = Path(f"data/gaia_100pc_{name}.csv")
+        if not cache.exists():
+            edges = ["10", "11", "12", "13.5", "15", "17.5", "20", "30", "1000000"]  # small slices keep each query quick
+            try:
+                pieces = []
+                for lo, hi in zip(edges[:-1], edges[1:]):
+                    pieces.append(ask_gaia(f"""
+                        SELECT n.source_id, n.original_ext_source_id AS {name}
+                        FROM gaiadr3.{table} AS n
+                        JOIN gaiadr3.gaia_source AS g ON g.source_id = n.source_id
+                        WHERE g.parallax > {lo} AND g.parallax <= {hi}"""))
+                pd.concat(pieces).drop_duplicates("source_id").to_csv(cache, index=False)
+            except Exception as error:
+                print(f"Could not download {name.upper()} names from the Gaia Archive: {str(error).splitlines()[0]}")
+                print("Carrying on without them; run this again later to add them.")
+                continue
+        table_ids = pd.read_csv(cache, dtype={name: "string"})
+        print(f"{len(table_ids):,} stars with a {name.upper()} number")
+        ids = table_ids if ids is None else ids.merge(table_ids, on="source_id", how="outer")
+    if ids is None:
+        return pd.DataFrame(columns=["source_id", "hip", "tyc"])
+    for name in CATALOGUES:
+        if name not in ids:
+            ids[name] = pd.NA
+    return ids
+
+
 def clean(stars):
     """Keep only stars with trustworthy measurements (Gaia's standard quality checks).
 

@@ -7,20 +7,32 @@
 `neighborhood_app.html` is an interactive, scroll-driven piece. A field of all 215,317 real stars,
 drawn in their measured colours with three.js, fills the screen, and the camera travels as you read:
 
-| Chapter | What lights up |
-|---|---|
-| 00 Arrival | the whole 100 pc sphere, seen from outside |
-| 01 Here | the Sun's nearest neighbours (within 25 pc) |
-| 02 Sphere | the red dwarfs, 73% of all the stars |
-| 03 Embers | the white dwarfs |
-| 04 Giants | the giants |
-| 05 Family | the Hyades cluster, seen through a 24 pc slice |
-| 06 Atlas | you choose: draw a loop on the HR diagram and those stars light up in 3D |
+| Chapter | What lights up | What a newcomer learns |
+|---|---|---|
+| 00 Arrival | the whole 100 pc sphere | what the dots are; what a parsec is |
+| 01 Here | the Sun's neighbours within 25 pc | how parallax measures distance |
+| 02 Sphere | the red dwarfs, 73% of all stars | why the sample is a ball; what red dwarfs are |
+| 03 Reading starlight | every star; the HR diagram appears | colour = temperature, absolute magnitude, the main sequence |
+| 04 Embers | the white dwarfs | why they sit at the lower left of the HR diagram |
+| 05 Giants | the giants | why they sit at the upper right |
+| 06 Family | the Hyades cluster, through a 24 pc slice | what a star cluster is |
+| 07 Atlas | you choose: draw a loop on the HR diagram | things to try |
+
+Each chapter pairs a short poetic line with an "In plain words" note. From chapter 03 on (on wide
+screens), the HR diagram stays on screen and lights up the same stars as the sky. It has temperature
+labels along the top, brightness compared with the Sun down the right side, and the Sun marked.
 
 **Moving around:** drag the sky to turn it, shift-drag (or right-drag, or two fingers) to pan,
 and use the + / − buttons, the + / − keys or a pinch to zoom. **Explore** (or the E key) hides the story so
-the scroll wheel zooms and the arrow keys turn the sky. **Click any star** to see what kind of star it is,
-its distance, the year its light left it, its brightness compared with the Sun, and its position.
+the scroll wheel zooms and the arrow keys turn the sky. **Click any star** to see what kind of star it is (with a one-line
+explanation), its catalogue name, its distance, the year its light left it, its brightness compared
+with the Sun, and its position, plus two links to the SIMBAD astronomy database: its entry, and a
+search around its position.
+
+**Star names** come from the Gaia team's cross-match tables in the Gaia Archive: Hipparcos (HIP)
+numbers, plus Tycho-2 (TYC) numbers when that table can be downloaded. Other stars show their
+Gaia DR3 number. Common names such as "Vega" would need SIMBAD's query service, which this cloud
+environment's network settings currently block (`simbad.cds.unistra.fr`).
 
 Every number in the text is computed from the data when the page loads.
 To use it, download the file and open it in a web browser (it loads three.js and fonts from the internet).
