@@ -7,20 +7,19 @@
 `neighborhood_app.html` is an interactive, scroll-driven piece. A field of all 215,317 real stars,
 drawn in their measured colours with three.js, fills the screen, and the camera travels as you read:
 
-| Chapter | What lights up | What a newcomer learns |
-|---|---|---|
-| 00 Arrival | the whole 100 pc sphere | what the dots are; what a parsec is |
-| 01 Here | the Sun's neighbours within 25 pc | how parallax measures distance |
-| 02 Sphere | the red dwarfs, 73% of all stars | why the sample is a ball; what red dwarfs are |
-| 03 Reading starlight | every star; the HR diagram appears | colour = temperature, absolute magnitude, the main sequence |
-| 04 Embers | the white dwarfs | why they sit at the lower left of the HR diagram |
-| 05 Giants | the giants | why they sit at the upper right |
-| 06 Family | the Hyades cluster, through a 24 pc slice | what a star cluster is |
-| 07 Atlas | you choose: draw a loop on the HR diagram | things to try |
+| Chapter | What lights up |
+|---|---|
+| 00 Arrival | the whole 100 pc sphere, seen from outside |
+| 01 Here | the Sun's nearest neighbours (within 25 pc) |
+| 02 Sphere | the red dwarfs, 73% of all the stars |
+| 03 Embers | the white dwarfs |
+| 04 Giants | the giants |
+| 05 Family | the Hyades cluster, seen through a 24 pc slice |
+| 06 Atlas | you choose: draw a loop on the HR diagram and those stars light up in 3D |
 
-Each chapter pairs a short poetic line with an "In plain words" note. From chapter 03 on (on wide
-screens), the HR diagram stays on screen and lights up the same stars as the sky. It has temperature
-labels along the top, brightness compared with the Sun down the right side, and the Sun marked.
+In the atlas, the HR diagram has temperature labels along the top, brightness compared with the Sun
+down the right side, and the Sun marked. The 3D sphere is framed in the space beside it, and
+**Hide diagram** folds it away to show the whole sky.
 
 **Moving around:** drag the sky to turn it, shift-drag (or right-drag, or two fingers) to pan,
 and use the + / − buttons, the + / − keys or a pinch to zoom. **Explore** (or the E key) hides the story so

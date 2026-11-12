@@ -101,12 +101,6 @@
   .fact { font-family: var(--font-data); font-weight: 300; font-size: 0.75rem; letter-spacing: 0.04em; color: var(--mute);
           border-top: 1px solid var(--hair); padding-top: 10px; margin: 0.4rem 0 0; }
   .ember { color: var(--ember); } .solc { color: var(--sol); }
-  /* "In plain words": a museum-label explanation under each poetic line */
-  .plain { font-family: var(--font-body); font-size: 0.92rem; line-height: 1.6; color: var(--ink); opacity: 0.92;
-           border-left: 1px solid var(--hair); padding: 2px 0 2px 16px; display: grid; gap: 0.55rem; max-width: 40ch; }
-  .plain p { margin: 0; }
-  .plain b { font-weight: 500; color: var(--sol); }
-  .plain .tag { font-family: var(--font-data); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mute); }
   .cue { font-family: var(--font-data); font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mute); margin-top: 2rem; }
   .cue span { display: inline-block; animation: drift 2.4s ease-in-out infinite; }
   @keyframes drift { 50% { transform: translateY(6px); } }
@@ -131,15 +125,20 @@
   #atlas { min-height: 100vh; align-content: start; padding-top: 14vh; }
   #atlas .text { pointer-events: none; }
   .panel { position: fixed; z-index: 4; right: max(64px, env(safe-area-inset-right, 0px)); bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-           width: 400px; display: grid; gap: 10px; opacity: 0; transform: translateY(16px); pointer-events: none;
+           width: 360px; display: grid; gap: 10px; opacity: 0; transform: translateY(16px); pointer-events: none;
            transition: opacity 0.8s, transform 0.8s; }
   body.atlas .panel { opacity: 1; transform: none; pointer-events: auto; }
-  @media (min-width: 821px) { body.hr .panel { opacity: 1; transform: none; } }  /* the diagram joins the story from chapter 03 */
   body:not(.atlas) .panel .chips, body:not(.atlas) #sel { display: none; }
   body:not(.atlas) #hr { cursor: default; }
   .panel .frame { position: relative; border: 1px solid var(--hair); background: rgba(3, 4, 7, 0.72); backdrop-filter: blur(6px); }
-  #hr { display: block; width: 100%; height: 440px; touch-action: none; cursor: crosshair; }
-  @media (max-height: 760px) and (min-width: 821px) { #hr { height: 360px; } }
+  #hr { display: block; width: 100%; height: 390px; touch-action: none; cursor: crosshair; }
+  @media (max-height: 760px) and (min-width: 821px) { #hr { height: 320px; } }
+  .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 10px;
+                font-family: var(--font-data); font-size: 0.64rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute); }
+  .panel-head button { font: inherit; color: var(--ink); background: rgba(3, 4, 7, 0.6); border: 1px solid var(--hair); padding: 5px 10px; cursor: pointer; }
+  .panel-head button:hover { border-color: var(--ink); }
+  .panel-head button:focus-visible { outline: 1px solid var(--sol); outline-offset: 2px; }
+  .panel.folded .frame, .panel.folded .chips, .panel.folded #sel { display: none !important; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chips button { font-family: var(--font-data); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase;
                   color: var(--ink); background: transparent; border: 1px solid var(--hair); padding: 6px 10px; cursor: pointer; }
@@ -157,7 +156,6 @@
     nav.index { display: none; }
     .panel { position: relative; left: auto; right: auto; bottom: auto; width: 100%; margin-top: 1.5rem; }
     #hr { height: 340px; }
-    .wide-only { display: none; }
     #atlas { padding-top: 10vh; }
     .readout { display: none; }
     .dock .hint { max-width: 14rem; }
@@ -178,11 +176,10 @@
   <a href="#c0" data-c="c0"><span>Arrival</span>00</a>
   <a href="#c1" data-c="c1"><span>Here</span>01</a>
   <a href="#c2" data-c="c2"><span>Sphere</span>02</a>
-  <a href="#c-hr" data-c="c-hr"><span>Starlight</span>03</a>
-  <a href="#c3" data-c="c3"><span>Embers</span>04</a>
-  <a href="#c4" data-c="c4"><span>Giants</span>05</a>
-  <a href="#c5" data-c="c5"><span>Family</span>06</a>
-  <a href="#atlas" data-c="atlas"><span>Atlas</span>07</a>
+  <a href="#c3" data-c="c3"><span>Embers</span>03</a>
+  <a href="#c4" data-c="c4"><span>Giants</span>04</a>
+  <a href="#c5" data-c="c5"><span>Family</span>05</a>
+  <a href="#atlas" data-c="atlas"><span>Atlas</span>06</a>
 </nav>
 <div class="readout" id="readout">camera 0 pc from the Sun</div>
 
@@ -214,10 +211,6 @@
       <h1>Our Neighborhood <em>in three dimensions</em></h1>
       <p class="verse">Every star within three hundred and twenty-six light-years of the Sun.
         The light from the farthest of them set out around the year 1700, and is arriving now.</p>
-      <aside class="plain"><span class="tag">In plain words</span>
-        <p>Each point of light is a real star, placed in 3D where the European Space Agency's Gaia satellite measured it, and painted in its real colour.
-          Distances are in <b>parsecs</b>: one parsec is 3.26 light-years, about 31 trillion kilometres.</p>
-        <p>Scroll down to travel. You can drag the sky to turn it at any time, and click a star to meet it.</p></aside>
       <p class="cue"><span>↓</span>&nbsp;&nbsp;Scroll to travel</p>
     </div>
   </section>
@@ -226,13 +219,9 @@
     <div class="text">
       <p class="eyebrow"><span class="n">01</span> Here</p>
       <h2>A small yellow star, <em>one of many.</em></h2>
-      <p class="prose">Lit around the Sun are its nearest neighbours: <span class="solc" data-count="near">3,000</span> stars within twenty-five parsecs.
-        From the parallax, a distance. From the distance, a place.</p>
-      <aside class="plain"><span class="tag">In plain words</span>
-        <p>How do we know how far away a star is? Hold up a finger and look at it with one eye, then the other: it seems to jump against the background.
-          That jump is <b>parallax</b>. As Earth circles the Sun, nearby stars jump the same way against distant ones.</p>
-        <p>The jump is tiny. For a star 100 parsecs away it is 10 milliarcseconds, about the width of a coin seen from 200 kilometres.
-          Gaia measured it for about 1.5 billion stars. A smaller jump means a farther star.</p></aside>
+      <p class="prose">Lit here are its nearest neighbours, the stars within twenty-five parsecs.
+        From a point 1.5 million kilometres beyond Earth, the Gaia spacecraft watched each star trace a tiny ellipse on the sky as we circled the Sun.
+        The size of that ellipse is called parallax. From the parallax, a distance. From the distance, a place.</p>
       <p class="fact">parallax &gt; 10 milliarcseconds ⟷ distance &lt; 100 parsecs</p>
     </div>
   </section>
@@ -243,78 +232,50 @@
       <div class="big" data-count="all">215,317</div>
       <p class="prose">Pull back and the neighborhood becomes a sphere two hundred parsecs across, evenly sown.
         Lit here are the red dwarfs, <span class="solc" data-count="redpct">73%</span> of everything.
-        They burn so slowly that not one has yet died.</p>
-      <aside class="plain"><span class="tag">In plain words</span>
-        <p>Why a sphere? We kept every star closer than 100 parsecs in every direction, so the selection is a ball with the Sun at its centre.
-          The Milky Way's disc of stars is several hundred parsecs thick, so the whole ball sits inside it and stars fill it evenly.</p>
-        <p><b>Red dwarfs</b> are small, cool stars, the most common kind in the Galaxy. Almost none can be seen without a telescope: they are too faint.</p></aside>
-      <p class="fact">red dwarf: colour BP − RP &gt; 1.8</p>
-    </div>
-  </section>
-
-  <section class="chapter" id="c-hr">
-    <div class="text">
-      <p class="eyebrow"><span class="n">03</span> Reading starlight</p>
-      <h2>Two numbers <em>tell a star's story.</em></h2>
-      <p class="prose">Colour, and true brightness. Arrange every star by these two, and the scatter of the sky falls into order.</p>
-      <aside class="plain"><span class="tag">In plain words</span>
-        <p><b>Colour tells temperature.</b> Blue-white stars are hot, around 10,000 °C at the surface. Yellow stars like the Sun are about 5,500 °C. Red stars are cooler, near 3,000 °C.</p>
-        <p><b>True brightness</b> is how bright a star would look if every star were moved to the same distance (10 parsecs). Astronomers call it <b>absolute magnitude</b>, and smaller numbers mean brighter.</p>
-        <p>Plot one against the other and you get the <b>Hertzsprung–Russell (HR) diagram</b><span class="wide-only">, shown at the right</span>.
-          Most stars fall on a diagonal band called the <b>main sequence</b>: stars in the long middle of their lives, burning hydrogen. Where a star sits tells you its stage of life. Our Sun is marked on it.</p></aside>
-      <p class="fact">colour BP − RP = how much brighter a star is in red light than in blue</p>
+        They are small and cool, and they burn so slowly that not one has yet died.</p>
+      <p class="fact">red dwarfs: colour BP − RP &gt; 1.8</p>
     </div>
   </section>
 
   <section class="chapter" id="c3">
     <div class="text">
-      <p class="eyebrow"><span class="n">04</span> Embers</p>
+      <p class="eyebrow"><span class="n">03</span> Embers</p>
       <div class="big ember" data-count="wd">15,373</div>
-      <p class="prose">White dwarfs. Each is the core a star left behind when it died, cooling for billions of years.
+      <p class="prose">White dwarfs. Each is the core a star left behind when it died: the size of Earth, heavier than half a Sun, cooling for billions of years.
         They are old enough to have wandered everywhere, and so they are everywhere.</p>
-      <aside class="plain"><span class="tag">In plain words</span>
-        <p>On the HR diagram, <b>white dwarfs</b> sit at the lower left. They are hot, so they glow white-blue, but only about the size of Earth, so they give off very little light.</p>
-        <p>When a star like the Sun runs out of fuel, it puffs away its outer layers and leaves this dense core behind. The Sun will end this way, billions of years from now.
-          White dwarfs come from stars that died long ago, so they are old, and old stars have had time to drift evenly through the neighbourhood.</p></aside>
       <p class="fact">white dwarf: absolute G &gt; 10 + 2.5 × (BP − RP)</p>
     </div>
   </section>
 
   <section class="chapter" id="c4">
     <div class="text">
-      <p class="eyebrow"><span class="n">05</span> Giants</p>
+      <p class="eyebrow"><span class="n">04</span> Giants</p>
       <div class="big solc" data-count="giants">747</div>
-      <p class="prose">Giants. Stars in old age, swollen to many times the Sun's size and tens of times its brightness.
+      <p class="prose">Giants. Stars in old age, the hydrogen at their centres spent, swollen to many times the Sun's size and tens of times its brightness.
         Rare, and scattered like lanterns across the whole sphere.</p>
-      <aside class="plain"><span class="tag">In plain words</span>
-        <p><b>Giants</b> sit at the upper right of the HR diagram. They are cool, so they look orange-red, but they are so large that they are very bright overall.</p>
-        <p>A star swells into a giant when the hydrogen in its core runs out. That stage is short compared with the rest of its life, which is why there are so few.</p></aside>
       <p class="fact">giant: absolute G &lt; 3.5 and BP − RP &gt; 1.0</p>
     </div>
   </section>
 
   <section class="chapter" id="c5">
     <div class="text">
-      <p class="eyebrow"><span class="n">06</span> Family</p>
+      <p class="eyebrow"><span class="n">05</span> Family</p>
       <h2>The Hyades <em>forty-seven parsecs toward Taurus</em></h2>
-      <p class="prose">A knot of stars born together about 650 million years ago, still travelling as one. The nearest star cluster to the Sun.</p>
-      <aside class="plain"><span class="tag">In plain words</span>
-        <p>A <b>star cluster</b> is a group of stars born from the same cloud of gas at the same time. They share an age and a distance, which makes clusters a natural test of how stars age.</p>
-        <p>To make the cluster stand out, only the brightest stars are lit here, and only in a slice of space 24 parsecs thick, so stars in front and behind don't hide it.</p></aside>
+      <p class="prose">A knot of stars born together about 650 million years ago, still travelling as one. The nearest star cluster to the Sun.
+        Here only the brightest stars are lit, in a slice of space twenty-four parsecs thick.</p>
       <p class="fact">centre x −43.9 · y 0.0 · z −18.1 pc</p>
     </div>
   </section>
 
   <section class="chapter" id="atlas">
     <div class="text">
-      <p class="eyebrow"><span class="n">07</span> Atlas</p>
+      <p class="eyebrow"><span class="n">06</span> Atlas</p>
       <h2>Every star, <em>sorted by colour and light.</em></h2>
-      <p class="prose">Now the diagram is yours. Draw a loop around any part of it, and the stars you choose will light up where they live.</p>
-      <aside class="plain"><span class="tag">Things to try</span>
-        <p>Loop the top of the main sequence, then the bottom, and compare how many stars you get. Loop the white dwarfs. Loop the scattered stars between the two sequences.</p>
-        <p>Click any star in the sky for its card, with its catalogue name and a link to the SIMBAD astronomy database.</p></aside>
+      <p class="prose">This is the Hertzsprung–Russell diagram. Draw a loop around any part of it, and the stars you choose will light up where they live.
+        Drag across the sky to turn it, and click any star to meet it.</p>
     </div>
     <div class="panel" id="panel" aria-label="Hertzsprung–Russell diagram">
+      <div class="panel-head"><span>HR diagram</span><button id="fold" aria-expanded="true" aria-controls="panel">Hide diagram</button></div>
       <div class="frame">
         <canvas id="hr" aria-label="Hertzsprung–Russell diagram. Draw a loop on it to choose stars"></canvas>
       </div>
@@ -327,7 +288,7 @@
       </div>
       <p id="sel" aria-live="polite">Draw a loop on the diagram.</p>
     </div>
-    <p class="credits" style="width: var(--col)">Data: ESA Gaia Data Release 3 (Gaia Collaboration, Vallenari et al. 2023), from the
+      <p class="credits" style="width: var(--col)">Data: ESA Gaia Data Release 3 (Gaia Collaboration, Vallenari et al. 2023), from the
       <a href="https://gea.esac.esa.int/archive/">Gaia Archive</a>. Stars with parallax &gt; 10 mas that pass Gaia's quality checks
       (RUWE &lt; 1.4; BP/RP colour excess, Riello et al. 2021). Catalogue names (HIP) from Gaia's cross-match to the Hipparcos catalogue; other stars show their Gaia DR3 number.
       Gaia cannot measure the very brightest stars, so Sirius and a few other famous neighbours are missing.
@@ -477,7 +438,6 @@ function resize() {
   const w = innerWidth, h = innerHeight, dpr = Math.min(devicePixelRatio || 1, 2);
   renderer.setPixelRatio(dpr); renderer.setSize(w, h, false);
   camera.aspect = w / h;
-  if (w > 820) camera.setViewOffset(w, h, -w * 0.16, 0, w, h); else camera.clearViewOffset();
   camera.updateProjectionMatrix();
   uniforms.uPx.value = dpr * Math.max(0.6, h / 900);
 }
@@ -490,12 +450,26 @@ const VIEWS = {
   c0:    { target: [0, 0, 0], r: 290, yaw: 0.6, pitch: 0.28, family: "all", gain: 0.32, drift: 1 },
   c1:    { target: [0, 0, 0], r: 60, yaw: 1.4, pitch: 0.18, family: "near", gain: 1, drift: 0.6 },
   c2:    { target: [0, 0, 0], r: 330, yaw: 2.2, pitch: 0.5, family: "red", gain: 0.38, drift: 1 },
-  "c-hr":{ target: [0, 0, 0], r: 320, yaw: 2.7, pitch: 0.3, family: "all", gain: 0.3, drift: 0.6, hr: true },
-  c3:    { target: [0, 0, 0], r: 260, yaw: 3.1, pitch: 0.15, family: "wd", gain: 1, drift: 1, hr: true },
-  c4:    { target: [0, 0, 0], r: 260, yaw: 3.9, pitch: 0.42, family: "giants", gain: 1, drift: 1, hr: true },
-  c5:    { target: [-43.9, 0, -18.1], r: 62, yaw: -Math.PI / 2 + 0.25, pitch: 0.12, family: "hyades", gain: 1, drift: 0.15, label: true, hr: true },
-  atlas: { target: [0, 0, 0], r: 300, yaw: 0.9, pitch: 0.35, family: "all", gain: 0.3, drift: 0.4, atlas: true, hr: true },
+  c3:    { target: [0, 0, 0], r: 260, yaw: 3.1, pitch: 0.15, family: "wd", gain: 1, drift: 1 },
+  c4:    { target: [0, 0, 0], r: 260, yaw: 3.9, pitch: 0.42, family: "giants", gain: 1, drift: 1 },
+  c5:    { target: [-43.9, 0, -18.1], r: 62, yaw: -Math.PI / 2 + 0.25, pitch: 0.12, family: "hyades", gain: 1, drift: 0.15, label: true },
+  atlas: { target: [0, 0, 0], r: 300, yaw: 0.9, pitch: 0.35, family: "all", gain: 0.3, drift: 0.4, atlas: true },
 };
+// Where on screen the sphere should sit. In the story it sits right of the text column;
+// in the atlas it sits in the gap between the text and the HR diagram, sized to fit that gap.
+const panelEl = document.getElementById("panel"), atlasText = document.querySelector("#atlas .text");
+function framing() {
+  const w = innerWidth, h = innerHeight;
+  if (w <= 820) return { centre: w / 2, fit: 1 };
+  if (active !== "atlas" || panelEl.classList.contains("folded")) return { centre: w * 0.66, fit: 1 };
+  const left = atlasText.getBoundingClientRect().right, right = panelEl.getBoundingClientRect().left;
+  const gap = Math.max(200, right - left);
+  // distance at which the 200 pc wide sphere spans ~90% of the gap (55° field of view)
+  const r = h * 100 / (Math.tan(27.5 * Math.PI / 180) * 0.9 * gap);
+  return { centre: (left + right) / 2, fit: Math.max(1, r / VIEWS.atlas.r) };
+}
+let shift = innerWidth > 820 ? innerWidth * 0.16 : 0;  // how far right of the middle the sphere sits, in pixels
+
 const cam = { tx: 0, ty: 0, tz: 0, r: reduceMotion ? 290 : 1400, yaw: 0.2, pitch: 0.6 };  // opens far away and flies in
 let goal = { ...VIEWS.c0 }, goalYaw = goal.yaw, goalPitch = goal.pitch, active = "c0";
 
@@ -518,7 +492,6 @@ function goTo(id) {
   if (VIEWS[active].family !== v.family || id === "c0") setFamily(v.family);
   active = id; goal = v; resetUser();
   document.body.classList.toggle("atlas", !!v.atlas);
-  document.body.classList.toggle("hr", !!v.hr);
   // the diagram lights up the same stars as the sky: the chapter's family, or your own choice in the atlas
   if (v.atlas) highlightHR(hasChoice ? i => chosen[i] > 0.5 : null);
   else highlightHR(v.family === "all" || v.family === "near" ? null : FAMILY[v.family]);
@@ -737,7 +710,11 @@ function frame(now) {
   if (!reduceMotion && !dragging && !user.touched) goalYaw += dt * 0.025 * goal.drift;  // the sky turns slowly until you touch it
   cam.tx += (goal.target[0] + user.pan[0] - cam.tx) * ease; cam.ty += (goal.target[1] + user.pan[1] - cam.ty) * ease;
   cam.tz += (goal.target[2] + user.pan[2] - cam.tz) * ease;
-  cam.r += (goal.r * (innerWidth > 820 ? 1 : 1.6) * user.zoom - cam.r) * ease;  // phones: stand farther back
+  const frameNow = framing();
+  shift += (frameNow.centre - innerWidth / 2 - shift) * Math.min(1, dt * 3);
+  camera.setViewOffset(innerWidth, innerHeight, -shift, 0, innerWidth, innerHeight);
+  camera.updateProjectionMatrix();
+  cam.r += (goal.r * (innerWidth > 820 ? 1 : 1.6) * frameNow.fit * user.zoom - cam.r) * ease;  // phones: stand farther back
   cam.yaw += (goalYaw - cam.yaw) * ease;
   cam.pitch += (goalPitch - cam.pitch) * ease;
   uniforms.uMix.value = Math.min(1, uniforms.uMix.value + dt * (reduceMotion ? 10 : 0.9));
@@ -829,7 +806,6 @@ function drawAxes() {
   c.fillText("colour BP − RP   →  redder, cooler", (left + right) / 2, bottom + 24 * S);
   c.fillText("surface temperature", (left + right) / 2, 8 * S);
   for (const [col, t] of [[0, "10,000 °C"], [2.5, "3,000 °C"]]) c.fillText(t, colourToX(col), top - 9 * S);
-  c.fillText("hotter  ←  →  cooler", colourToX(1.25), top - 9 * S);
   c.textAlign = "left";                                                                                  // brightness vs the Sun
   for (const [g, t] of [[-0.33, "100 ×"], [4.67, "1 × Sun"], [9.67, "1/100"], [14.67, "1/10,000"]]) c.fillText(t, right + 6 * S, magToY(g));
   c.save(); c.translate(9 * S, (top + bottom) / 2); c.rotate(-Math.PI / 2); c.textAlign = "center";
@@ -881,6 +857,13 @@ function choose(indices, label) {
   sel.innerHTML = `<b>${indices.length.toLocaleString()}</b> ${label || "stars chosen"} · median distance <b>${d[d.length >> 1].toFixed(1)} pc</b><br>` +
                   `nearest <b>${d[0].toFixed(2)} pc</b>, light that left ${Math.round(d[0] * 3.2616)} years ago`;
 }
+
+// Fold the diagram away to see the whole sky, and back again
+document.getElementById("fold").addEventListener("click", e => {
+  const folded = panelEl.classList.toggle("folded");
+  e.currentTarget.textContent = folded ? "Show diagram" : "Hide diagram";
+  e.currentTarget.setAttribute("aria-expanded", String(!folded));
+});
 
 // Lasso: collect points while the pointer is down, then keep the stars inside the loop
 function inside(px, py, poly) {
